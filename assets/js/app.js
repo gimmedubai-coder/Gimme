@@ -54,6 +54,7 @@ const Gimme = (() => {
     s.items[key] = has ? current.filter(f => f !== folderId) : [...current, folderId];
     if (s.items[key].length === 0) delete s.items[key];
     save(KEYS.saved, s);
+    if (!has) trackEvent(key.startsWith('recipe:') ? 'recipe_saved' : 'article_saved', { item_id: key });
     return !has;
   }
 
@@ -78,6 +79,60 @@ const Gimme = (() => {
   /* ---------- Auth-gate voor app-pagina's ---------- */
   function requireAuth() {
     if (!isLoggedIn()) { location.href = 'signup.html'; }
+  }
+
+  /* ---------- Analytics: GA4 conversion events ---------- */
+  // Werkt alleen zodra de GA4_MEASUREMENT_ID placeholder in elke <head> is vervangen door een echte ID.
+  function trackEvent(name, params) {
+    if (typeof window.gtag === 'function') window.gtag('event', name, params || {});
+  }
+
+  /* ---------- SEO: per-pagina meta tags, canonical en JSON-LD ---------- */
+  function setPageMeta({ title, description, image, canonical, jsonLd } = {}) {
+    if (description) {
+      let d = document.querySelector('meta[name="description"]');
+      if (!d) { d = document.createElement('meta'); d.setAttribute('name', 'description'); document.head.appendChild(d); }
+      d.setAttribute('content', description);
+
+      let ogd = document.querySelector('meta[property="og:description"]');
+      if (!ogd) { ogd = document.createElement('meta'); ogd.setAttribute('property', 'og:description'); document.head.appendChild(ogd); }
+      ogd.setAttribute('content', description);
+    }
+    if (title) {
+      let ogt = document.querySelector('meta[property="og:title"]');
+      if (!ogt) { ogt = document.createElement('meta'); ogt.setAttribute('property', 'og:title'); document.head.appendChild(ogt); }
+      ogt.setAttribute('content', title);
+    }
+    if (image) {
+      let ogi = document.querySelector('meta[property="og:image"]');
+      if (!ogi) { ogi = document.createElement('meta'); ogi.setAttribute('property', 'og:image'); document.head.appendChild(ogi); }
+      ogi.setAttribute('content', image);
+
+      let ogtype = document.querySelector('meta[property="og:type"]');
+      if (!ogtype) { ogtype = document.createElement('meta'); ogtype.setAttribute('property', 'og:type'); document.head.appendChild(ogtype); }
+      ogtype.setAttribute('content', 'article');
+    }
+
+    let canon = document.querySelector('link[rel="canonical"]');
+    if (!canon) { canon = document.createElement('link'); canon.setAttribute('rel', 'canonical'); document.head.appendChild(canon); }
+    canon.setAttribute('href', canonical || (location.origin + location.pathname + location.search));
+
+    if (jsonLd) {
+      let s = document.getElementById('ld-json');
+      if (!s) { s = document.createElement('script'); s.type = 'application/ld+json'; s.id = 'ld-json'; document.head.appendChild(s); }
+      s.textContent = JSON.stringify(jsonLd);
+    }
+  }
+
+  // "3 min" / "1 hr 20 min" -> ISO 8601 duration (PT3M / PT1H20M), used in Recipe schema.
+  function toISODuration(timeStr) {
+    if (!timeStr) return undefined;
+    const hrMatch = timeStr.match(/(\d+)\s*hr/);
+    const minMatch = timeStr.match(/(\d+)\s*min/);
+    const h = hrMatch ? Number(hrMatch[1]) : 0;
+    const m = minMatch ? Number(minMatch[1]) : 0;
+    if (!h && !m) return undefined;
+    return `PT${h ? h + 'H' : ''}${m ? m + 'M' : ''}`;
   }
 
   /* ---------- Nav: account-menu (Sign Up, of avatar-dropdown als je bent ingelogd) ---------- */
@@ -155,7 +210,7 @@ const Gimme = (() => {
       <article class="card hover" style="position:relative">
         <div style="position:relative">
           <a href="recipe.html?id=${r.id}" aria-label="${r.title}">
-            <img class="card-img" src="${r.img}" alt="Gimmi_${r.title}" loading="lazy">
+            <img class="card-img" src="${r.img}" alt="${r.title}" loading="lazy">
           </a>
           ${showSave ? `<button class="save-btn ${saved ? 'saved' : ''}" data-save-key="${key}" aria-label="Save ${r.title}" aria-pressed="${saved}"><span class="save-shape"></span></button>` : ''}
         </div>
@@ -266,6 +321,7 @@ const Gimme = (() => {
         const list = load(KEYS.newsletter, []);
         if (!list.includes(email)) list.push(email);
         save(KEYS.newsletter, list);
+        trackEvent('newsletter_signup');
         input.value = '';
         toast('You\'re on the list, see you next week!');
       });
@@ -292,5 +348,6 @@ const Gimme = (() => {
     getSaved, isSaved, foldersFor, toggleSaved, createFolder,
     getProfile, setProfile, isLoggedIn, logout, requireAuth,
     recipeById, recipeCard, focusLabel, focusClass, tagLabel, bindSaveButtons,
+    setPageMeta, toISODuration, trackEvent,
   };
 })();
