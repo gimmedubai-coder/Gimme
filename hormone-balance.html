@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hormone Balance | Gimme</title>
+<meta name="description" content="Cycle-aware recipes and no-nonsense education about hormones, periods and PMS.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css?v=3">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<nav class="nav" aria-label="Main navigation">
+  <a class="logo" href="index.html">gimme</a>
+  <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <div class="nav-links">
+    <a class="navlink" href="recipes.html">Recipes</a>
+    <a class="navlink " href="gut-health.html">Gut Health</a>
+    <a class="navlink active" href="hormone-balance.html">Hormone Balance</a>
+    <a class="navlink " href="high-protein.html">High Protein</a>
+    <a class="navlink" href="journal.html">Journal</a>
+    <a class="navlink" href="about.html">About Us</a>
+    <a class="btn btn-sm" href="signup.html">Sign Up</a>
+  </div>
+</nav>
+
+<main id="main">
+  <section class="wrap hero">
+    <div>
+      <p class="eyebrow" style="color:var(--hor-accent);opacity:1">HORMONE BALANCE</p>
+      <h1 class="h1" style="margin-bottom:20px">In sync with your cycle</h1>
+      <p class="body-txt" style="opacity:.65;max-width:460px;margin:0 0 28px">Warm, steadying recipes for period week and beyond, plus plain-language education about your cycle, hormones and what's actually normal.</p>
+      <a class="btn" href="recipes.html?focus=hormone">See all hormone balance recipes</a>
+    </div>
+    <img class="hero-img" src="assets/img/hormone-hero.jpg" alt="Gimmi_Hormone Balance">
+  </section>
+
+  <section class="wrap section">
+    <div class="section-head">
+      <h2 class="h2">Recipes for your cycle</h2>
+      <a class="clear-filters" href="recipes.html?focus=hormone">View all →</a>
+    </div>
+    <div class="grid-3" id="recipeGrid"></div>
+  </section>
+
+  <section class="wrap section">
+    <div class="section-head">
+      <h2 class="h2">Understand your hormones</h2>
+      <a class="clear-filters" href="journal.html">All articles →</a>
+    </div>
+    <div class="grid-3" id="eduGrid"></div>
+  </section>
+
+  <section class="wrap section">
+    <div class="panel panel-dark" style="display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap">
+      <div>
+        <h2 class="h2" style="margin-bottom:8px">Make it yours</h2>
+        <p style="opacity:.75;margin:0">Save recipes, track how you feel and build your weekly menu.</p>
+      </div>
+      <a class="btn btn-white" href="signup.html">Create your free account</a>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-bottom" style="border:none">© 2026 gimme, made with love (and a lot of kimchi)</div>
+  </div>
+</footer>
+
+<script src="assets/js/data.js?v=3"></script>
+<script src="assets/js/app.js?v=3"></script>
+<script>
+  const FOCUS = 'hormone';
+  document.getElementById('recipeGrid').innerHTML =
+    RECIPES.filter(r => r.focuses.includes(FOCUS)).slice(0, 6).map(r => Gimme.recipeCard(r)).join('');
+  Gimme.bindSaveButtons(document.getElementById('recipeGrid'));
+
+  document.getElementById('eduGrid').innerHTML =
+    ARTICLES.filter(a => a.category === FOCUS).slice(0, 6).map(a => `
+      <a class="card" href="article.html?slug=${a.slug}" style="text-decoration:none;color:inherit">
+        <div class="card-body">
+          <div class="card-row">
+            <span class="pill tag ${a.category}">${a.category.replace('-', ' ').toUpperCase()}</span>
+            <span style="font:600 12px var(--font-head);opacity:.5">${a.readTime}</span>
+          </div>
+          <div class="card-title">${a.title}</div>
+          <p class="card-excerpt">${a.excerpt}</p>
+          <span style="font:700 13px var(--font-head);color:var(--accent);margin-top:auto">Read article →</span>
+        </div>
+      </a>`).join('');
+</script>
+</body>
+</html>

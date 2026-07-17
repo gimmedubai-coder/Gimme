@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign Up | Gimme</title>
+<meta name="description" content="Create your free Gimme account, save recipes, track your cycle and build your weekly menu.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css?v=3">
+</head>
+<body>
+
+<nav class="nav" aria-label="Main navigation">
+  <a class="logo" href="index.html">gimme</a>
+  <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <div class="nav-links">
+    <a class="navlink" href="recipes.html">Recipes</a>
+    <a class="navlink" href="gut-health.html">Gut Health</a>
+    <a class="navlink" href="hormone-balance.html">Hormone Balance</a>
+    <a class="navlink" href="high-protein.html">High Protein</a>
+    <a class="navlink" href="journal.html">Journal</a>
+    <a class="navlink" href="about.html">About Us</a>
+  </div>
+</nav>
+
+<main class="auth-grid">
+  <div style="display:flex">
+    <div class="auth-panel">
+      <p class="eyebrow" id="stepEyebrow">STEP 1 OF 3</p>
+      <h1 class="h2" id="stepTitle">Create your account</h1>
+      <div class="step-dots" id="stepDots">
+        <span class="step-dot active"></span><span class="step-dot"></span><span class="step-dot"></span>
+      </div>
+
+      <form id="wizard" novalidate>
+        <div id="stepBody"></div>
+        <div style="display:flex;gap:12px;margin-top:26px">
+          <button type="button" class="btn btn-ghost" id="backBtn" hidden>Back</button>
+          <button type="submit" class="btn" id="nextBtn" style="flex:1">Continue</button>
+        </div>
+      </form>
+      <p class="form-note" style="margin-top:20px">
+        Your details are stored locally in your browser only; no account is created on a server yet.
+      </p>
+    </div>
+  </div>
+  <div>
+    <img class="auth-img" src="assets/img/signup-side.jpg" alt="Gimmi_Cooking in a bright kitchen">
+  </div>
+</main>
+
+<script src="assets/js/data.js?v=3"></script>
+<script src="assets/js/app.js?v=3"></script>
+<script>
+  const FOCUS_OPTS = [
+    ['gut', '🥬', 'Gut Health', 'Digestion, bloating, fermented foods'],
+    ['hormone', '🌸', 'Hormone Balance', 'Cycle-aware eating, PMS support'],
+    ['protein', '💪', 'High Protein', 'Stay full, protect muscle'],
+    ['anti-inflammatory', '🫚', 'Anti-Inflammatory', 'Ginger, turmeric, omega-rich food'],
+  ];
+  const TRACK_OPTS = [
+    ['cycle', 'My cycle', 'Periods, phases and predictions'],
+    ['symptoms', 'Symptoms', 'Cramps, bloating, energy and mood'],
+    ['meals', 'What I eat', 'How food makes me feel'],
+  ];
+
+  let step = 1;
+  const data = { name: '', email: '', focuses: new Set(), tracking: new Set() };
+
+  const stepBody = document.getElementById('stepBody');
+  const stepTitle = document.getElementById('stepTitle');
+  const stepEyebrow = document.getElementById('stepEyebrow');
+  const backBtn = document.getElementById('backBtn');
+  const nextBtn = document.getElementById('nextBtn');
+
+  function renderStep() {
+    stepEyebrow.textContent = `STEP ${step} OF 3`;
+    document.querySelectorAll('.step-dot').forEach((d, i) => d.classList.toggle('active', i < step));
+    backBtn.hidden = step === 1;
+    nextBtn.textContent = step === 3 ? 'Start cooking' : 'Continue';
+
+    if (step === 1) {
+      stepTitle.textContent = 'Create your account';
+      stepBody.innerHTML = `
+        <div class="form-row">
+          <label class="label" for="fName">Your name</label>
+          <input class="field" id="fName" type="text" placeholder="e.g. Emma" value="${data.name}" autocomplete="name">
+        </div>
+        <div class="form-row">
+          <label class="label" for="fEmail">Email address</label>
+          <input class="field" id="fEmail" type="email" placeholder="you@example.com" value="${data.email}" autocomplete="email">
+        </div>`;
+    } else if (step === 2) {
+      stepTitle.textContent = 'What brings you here?';
+      stepBody.innerHTML = `
+        <p class="form-note" style="margin:-8px 0 16px">Pick one or more, we'll personalize recipes around them.</p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          ${FOCUS_OPTS.map(([k, icon, t, d]) => `
+            <button type="button" class="opt-card ${data.focuses.has(k) ? 'on' : ''}" data-focus="${k}">
+              <span class="dd-check ${data.focuses.has(k) ? 'on' : ''}"></span>
+              <span style="font-size:20px">${icon}</span>
+              <span><strong>${t}</strong><br><span class="form-note">${d}</span></span>
+            </button>`).join('')}
+        </div>`;
+      stepBody.querySelectorAll('[data-focus]').forEach(b =>
+        b.addEventListener('click', () => {
+          const k = b.dataset.focus;
+          data.focuses.has(k) ? data.focuses.delete(k) : data.focuses.add(k);
+          renderStep();
+        }));
+    } else {
+      stepTitle.textContent = 'What would you like to track?';
+      stepBody.innerHTML = `
+        <p class="form-note" style="margin:-8px 0 16px">You can always change this later.</p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          ${TRACK_OPTS.map(([k, t, d]) => `
+            <button type="button" class="opt-card ${data.tracking.has(k) ? 'on' : ''}" data-track="${k}">
+              <span class="dd-check ${data.tracking.has(k) ? 'on' : ''}"></span>
+              <span><strong>${t}</strong><br><span class="form-note">${d}</span></span>
+            </button>`).join('')}
+        </div>`;
+      stepBody.querySelectorAll('[data-track]').forEach(b =>
+        b.addEventListener('click', () => {
+          const k = b.dataset.track;
+          data.tracking.has(k) ? data.tracking.delete(k) : data.tracking.add(k);
+          renderStep();
+        }));
+    }
+  }
+
+  document.getElementById('wizard').addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (step === 1) {
+      const name = document.getElementById('fName').value.trim();
+      const email = document.getElementById('fEmail').value.trim();
+      if (!name) { Gimme.toast('Please enter your name'); return; }
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { Gimme.toast('Please enter a valid email address'); return; }
+      data.name = name; data.email = email;
+      step = 2; renderStep();
+    } else if (step === 2) {
+      if (!data.focuses.size) { Gimme.toast('Pick at least one focus'); return; }
+      step = 3; renderStep();
+    } else {
+      Gimme.setProfile({
+        name: data.name, email: data.email,
+        focuses: [...data.focuses], tracking: [...data.tracking],
+        createdAt: new Date().toISOString(),
+      });
+      Gimme.toast(`Welcome, ${data.name}!`);
+      setTimeout(() => location.href = 'dashboard.html', 600);
+    }
+  });
+
+  backBtn.addEventListener('click', () => { if (step > 1) { step--; renderStep(); } });
+
+  // Bestaand profiel? Vul stap 1 vooraf in.
+  const existing = Gimme.getProfile();
+  if (existing) { data.name = existing.name || ''; data.email = existing.email || ''; }
+
+  renderStep();
+</script>
+</body>
+</html>

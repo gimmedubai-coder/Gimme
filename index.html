@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gimme: Feel good. Eat like it.</title>
+<meta name="description" content="Recipes and honest education for gut health, hormone balance and high-protein weeks, by Samy & Renske.">
+<meta property="og:title" content="Gimme: Feel good. Eat like it.">
+<meta property="og:description" content="Recipes and honest education for gut health, hormone balance and high-protein weeks.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="assets/img/hero.jpg">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css?v=3">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<nav class="nav" aria-label="Main navigation">
+  <a class="logo" href="index.html">gimme</a>
+  <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <div class="nav-links">
+    <a class="navlink" href="recipes.html">Recipes</a>
+    <a class="navlink" href="gut-health.html">Gut Health</a>
+    <a class="navlink" href="hormone-balance.html">Hormone Balance</a>
+    <a class="navlink" href="high-protein.html">High Protein</a>
+    <a class="navlink" href="journal.html">Journal</a>
+    <a class="navlink" href="about.html">About Us</a>
+    <a class="btn btn-sm" href="signup.html">Sign Up</a>
+  </div>
+</nav>
+
+<main id="main">
+  <!-- HERO -->
+  <section class="wrap hero">
+    <div>
+      <span class="pill" style="margin-bottom:20px">New recipe: Gut-Friendly Kimchi Fried Rice</span>
+      <h1 class="h1" style="margin:0 0 22px">Feel good. Eat like it.</h1>
+      <p class="body-txt" style="opacity:.65;max-width:440px;margin:0 0 30px">
+        Recipes for gut health, hormone balance and high-protein weeks, made by two friends
+        who got tired of feeling bloated, tired and confused about food.
+      </p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <a class="btn" href="recipes.html">Browse recipes</a>
+        <a class="btn btn-ghost" href="about.html">Read our story</a>
+      </div>
+    </div>
+    <div>
+      <img class="hero-img" src="assets/img/hero.jpg" alt="Gimmi_Nourishing grain bowl" fetchpriority="high">
+    </div>
+  </section>
+
+  <!-- PILLARS -->
+  <section class="wrap section">
+    <div class="grid-3">
+      <a class="pillar" href="gut-health.html">
+        <div>
+          <div class="pillar-tag">GUT HEALTH</div>
+          <div class="pillar-title">Happy gut,<br>happier you</div>
+          <div class="pillar-swatch" style="background:var(--gut-accent)"></div>
+        </div>
+        <span class="pillar-cta" style="color:var(--gut-accent)">Explore recipes <span aria-hidden="true">→</span></span>
+      </a>
+      <a class="pillar" href="hormone-balance.html">
+        <div>
+          <div class="pillar-tag">HORMONE BALANCE</div>
+          <div class="pillar-title">In sync with<br>your cycle</div>
+          <div class="pillar-swatch" style="background:var(--hor-accent)"></div>
+        </div>
+        <span class="pillar-cta" style="color:var(--hor-accent)">Explore recipes <span aria-hidden="true">→</span></span>
+      </a>
+      <a class="pillar" href="high-protein.html">
+        <div>
+          <div class="pillar-tag">HIGH PROTEIN</div>
+          <div class="pillar-title">Strong, full<br>&amp; energized</div>
+          <div class="pillar-swatch" style="background:var(--pro-accent)"></div>
+        </div>
+        <span class="pillar-cta" style="color:var(--pro-accent)">Explore recipes <span aria-hidden="true">→</span></span>
+      </a>
+    </div>
+  </section>
+
+  <!-- WEEKMENU -->
+  <section class="wrap section">
+    <div class="week-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap">
+        <div style="display:flex;gap:18px;align-items:flex-start">
+          <div class="week-badge" id="weekBadge">
+            <div class="days" id="weekDays">7</div>
+            <div class="month">new recipes</div>
+          </div>
+          <div>
+            <h2 class="h2" style="margin:0 0 8px">This week's menu</h2>
+            <p class="body-txt" style="opacity:.6;max-width:340px;margin:0">
+              Pick a day to see what's cooking. Every recipe links straight to the full version.
+            </p>
+          </div>
+        </div>
+        <a class="btn btn-ghost" href="recipes.html">All recipes</a>
+      </div>
+      <div class="day-tabs" id="dayTabs" role="tablist" aria-label="Day of the week"></div>
+      <div class="week-detail" id="weekDetail"></div>
+    </div>
+  </section>
+
+  <!-- JOURNAL -->
+  <section class="wrap section">
+    <div class="section-head">
+      <h2 class="h2">From the journal</h2>
+      <a class="clear-filters" href="journal.html">All articles →</a>
+    </div>
+    <div class="grid-3" id="journalGrid"></div>
+  </section>
+
+  <!-- FOLLOW -->
+  <section class="wrap section">
+    <div class="section-head">
+      <h2 class="h2">Popular this week</h2>
+      <a class="clear-filters" href="recipes.html">All recipes →</a>
+    </div>
+    <div class="grid-4" id="followGrid"></div>
+  </section>
+
+  <!-- NEWSLETTER -->
+  <section class="wrap section">
+    <div class="newsletter">
+      <div>
+        <h2 class="h2" style="margin-bottom:14px">Get the weekly menu in your inbox</h2>
+        <p style="opacity:.75;margin:0 0 24px">Every Sunday: seven recipes, one focus, zero spam. Unsubscribe anytime.</p>
+        <form class="newsletter-form" data-newsletter>
+          <input class="field input-dark" type="email" placeholder="Your email address" aria-label="Email address" required>
+          <button class="btn btn-white" type="submit">Subscribe</button>
+        </form>
+        <p class="small" style="opacity:.45;margin-top:14px">We store your address locally for now, hook up your email provider later.</p>
+      </div>
+      <img src="assets/img/overnight-oats.jpg" alt="Gimmi_Overnight Oats with Orange and Ginger" loading="lazy">
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <a class="logo" href="index.html">gimme</a>
+        <p class="small" style="opacity:.6;max-width:280px;margin:14px 0 0">Food that helps you feel good, recipes for gut health, hormone balance and high-protein weeks.</p>
+      </div>
+      <div>
+        <div class="footer-title">EXPLORE</div>
+        <div class="footer-links">
+          <a class="navlink" href="recipes.html">Recipes</a>
+          <a class="navlink" href="gut-health.html">Gut Health</a>
+          <a class="navlink" href="hormone-balance.html">Hormone Balance</a>
+          <a class="navlink" href="high-protein.html">High Protein</a>
+          <a class="navlink" href="journal.html">Journal</a>
+          <a class="navlink" href="about.html">About Us</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-title">YOUR ACCOUNT</div>
+        <div class="footer-links">
+          <a class="navlink" href="signup.html">Sign Up</a>
+          <a class="navlink" href="dashboard.html">Dashboard</a>
+          <a class="navlink" href="cycle-tracker.html">Cycle Tracker</a>
+          <a class="navlink" href="saved.html">Saved</a>
+          <a class="navlink" href="shopping-list.html">Shopping List</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">© 2026 gimme, made with love (and a lot of kimchi) by Samy &amp; Renske</div>
+  </div>
+</footer>
+
+<script src="assets/js/data.js?v=3"></script>
+<script src="assets/js/app.js?v=3"></script>
+<script>
+  // --- Weekmenu ---
+  const tabsEl = document.getElementById('dayTabs');
+  const detailEl = document.getElementById('weekDetail');
+  let activeDay = 0;
+
+  function renderTabs() {
+    tabsEl.innerHTML = WEEK_MENU.map((d, i) =>
+      `<button class="day-tab ${i === activeDay ? 'active' : ''}" role="tab" aria-selected="${i === activeDay}" data-day="${i}">${d.day}</button>`
+    ).join('');
+    tabsEl.querySelectorAll('[data-day]').forEach(b =>
+      b.addEventListener('click', () => { activeDay = Number(b.dataset.day); renderTabs(); renderDetail(); }));
+  }
+
+  function renderDetail() {
+    const { day, recipeId } = WEEK_MENU[activeDay];
+    const r = Gimme.recipeById(recipeId);
+    detailEl.innerHTML = `
+      <img src="${r.img}" alt="Gimmi_${r.title}">
+      <div class="week-detail-body">
+        <div class="card-row">
+          <span class="pill tag ${Gimme.focusClass(r)}">${Gimme.focusLabel(r)}</span>
+          <span style="font:600 12px var(--font-head);opacity:.5">${r.time}</span>
+        </div>
+        <h3 class="h3" style="margin:16px 0 8px">${day}: ${r.title}</h3>
+        <p style="opacity:.65;margin:0 0 22px">${r.excerpt}</p>
+        <div style="margin-top:auto">
+          <a class="btn" href="recipe.html?id=${r.id}">View recipe</a>
+        </div>
+      </div>`;
+  }
+  renderTabs(); renderDetail();
+
+  // --- Journal preview (3 nieuwste) ---
+  const picks = ['gut-brain-connection', 'cycle-and-hormones', 'protein-how-much'];
+  document.getElementById('journalGrid').innerHTML = picks.map(slug => {
+    const a = ARTICLES.find(x => x.slug === slug);
+    return `
+      <a class="card" href="article.html?slug=${a.slug}" style="text-decoration:none;color:inherit">
+        <div class="card-body">
+          <div class="card-row">
+            <span class="pill tag ${a.category === 'lifestyle' ? 'neutral' : a.category}">${a.category.replace('-', ' ').toUpperCase()}</span>
+            <span style="font:600 12px var(--font-head);opacity:.5">${a.readTime}</span>
+          </div>
+          <div class="card-title">${a.title}</div>
+          <p class="card-excerpt">${a.excerpt}</p>
+          <span style="font:700 13px var(--font-head);color:var(--accent);margin-top:auto">Read article →</span>
+        </div>
+      </a>`;
+  }).join('');
+
+  // --- Follow-tegels ---
+  const tiles = [
+    ['kimchi-fried-rice', 'Kimchi fried rice, step by step', 6],
+    ['golden-milk', 'Golden milk for period week', 16],
+    ['overnight-oats', 'Overnight oats in 10 minutes', 5],
+    ['chickpea-bowl', 'Our most-saved lunch bowl', 19],
+  ];
+  document.getElementById('followGrid').innerHTML = tiles.map(([img, label, id]) => `
+    <a class="follow-tile" href="recipe.html?id=${id}">
+      <img src="assets/img/${img}.jpg" alt="Gimmi_${Gimme.recipeById(id).title}" loading="lazy">
+      <span class="tag-overlay">${label}</span>
+    </a>`).join('');
+</script>
+</body>
+</html>

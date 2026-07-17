@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shopping List | Gimme</title>
+<meta name="description" content="Your Gimme shopping list, ingredients automatically added up across recipes.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css?v=3">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<nav class="nav" aria-label="App navigation">
+  <a class="logo" href="dashboard.html">gimme</a>
+  <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <div class="nav-links">
+    <a class="navlink" href="dashboard.html">Dashboard</a>
+    <a class="navlink" href="recipes.html">Recipes</a>
+    <a class="navlink" href="cycle-tracker.html">Cycle Tracker</a>
+    <a class="navlink" href="saved.html">Saved</a>
+    <a class="navlink active" href="shopping-list.html">Shopping List</a>
+    <a class="avatar" href="signup.html" title="Your profile">G</a>
+  </div>
+</nav>
+
+<main id="main" class="wrap" style="padding-top:44px;padding-bottom:88px">
+  <p class="eyebrow">SHOPPING LIST</p>
+  <h1 class="h1" style="margin-bottom:10px">This week's groceries</h1>
+  <p class="body-txt" style="opacity:.6;max-width:520px;margin:0 0 36px">
+    Add recipes from their recipe page, ingredients are added up automatically.
+  </p>
+
+  <div id="content"></div>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-bottom" style="border:none">© 2026 gimme, made with love (and a lot of kimchi)</div>
+  </div>
+</footer>
+
+<script src="assets/js/data.js?v=3"></script>
+<script src="assets/js/app.js?v=3"></script>
+<script>
+  let list = Gimme.load(Gimme.KEYS.shopping, { groups: [], checked: {} });
+  list.checked = list.checked || {};
+
+  const fmtQty = (qty, unit) => {
+    const val = qty >= 100 ? Math.round(qty) : Math.round(qty * 10) / 10;
+    return `${val} ${unit}`;
+  };
+
+  function persist() { Gimme.save(Gimme.KEYS.shopping, list); }
+
+  function render() {
+    const root = document.getElementById('content');
+
+    if (!list.groups.length) {
+      root.innerHTML = `
+        <div class="empty-state panel">
+          <h3 class="h3">Your list is empty</h3>
+          <p style="margin:10px 0 22px">Open a recipe and hit "Add to shopping list".</p>
+          <a class="btn" href="recipes.html">Browse recipes</a>
+        </div>`;
+      return;
+    }
+
+    // Totaal ingredienten over alle groepen, geschaald op servings
+    const totals = {};
+    list.groups.forEach(g => {
+      const r = Gimme.recipeById(g.recipeId);
+      if (!r) return;
+      r.ingredients.forEach(i => {
+        const k = i.name + '|' + i.unit;
+        totals[k] = (totals[k] || 0) + i.qty * g.servings / r.serves;
+      });
+    });
+    const totalItems = Object.keys(totals).length;
+    const doneItems = Object.values(list.checked).filter(Boolean).length;
+
+    root.innerHTML = `
+      <div class="grid-2" style="align-items:start;gap:32px">
+        <div>
+          <h2 class="h3" style="margin-bottom:16px">Recipes on your list (${list.groups.length})</h2>
+          ${list.groups.map(g => {
+            const r = Gimme.recipeById(g.recipeId);
+            if (!r) return '';
+            return `
+              <div class="panel" style="margin-bottom:14px;padding:16px;display:flex;gap:14px;align-items:center">
+                <img src="${r.img}" alt="Gimmi_${r.title}" style="width:64px;height:64px;border-radius:12px;object-fit:cover;flex-shrink:0">
+                <div style="flex:1;min-width:0">
+                  <a href="recipe.html?id=${r.id}" style="text-decoration:none;color:inherit;font:700 15px var(--font-head)">${r.title}</a>
+                  <div class="stepper" style="margin-top:8px">
+                    <button type="button" data-dec="${r.id}" aria-label="Fewer servings">−</button>
+                    <span class="val" style="min-width:70px">${g.servings} serving${g.servings > 1 ? 's' : ''}</span>
+                    <button type="button" data-inc="${r.id}" aria-label="More servings">+</button>
+                  </div>
+                </div>
+                <button class="remove-link" data-remove="${r.id}">Remove</button>
+              </div>`;
+          }).join('')}
+        </div>
+
+        <div class="panel">
+          <div class="card-row" style="margin-bottom:8px">
+            <h2 class="h3">Ingredients</h2>
+            <span class="count-badge">${doneItems}/${totalItems} done</span>
+          </div>
+          <p class="small" style="opacity:.5;margin:0 0 10px">Totals across all recipes, scaled to your servings.</p>
+          ${Object.entries(totals).sort().map(([k, qty]) => {
+            const [name, unit] = k.split('|');
+            const done = !!list.checked[k];
+            return `
+              <div class="item-row">
+                <button class="checkbox ${done ? 'on' : ''}" data-check="${k}" aria-label="Mark ${name} as bought" aria-pressed="${done}"></button>
+                <span class="grow item-name ${done ? 'done' : ''}">${name}</span>
+                <span class="item-amount">${fmtQty(qty, unit)}</span>
+              </div>`;
+          }).join('')}
+          <div style="display:flex;gap:16px;margin-top:18px">
+            <button class="clear-filters" id="clearChecked">Clear checked</button>
+            <button class="remove-link" id="clearAll">Clear everything</button>
+          </div>
+        </div>
+      </div>`;
+
+    root.querySelectorAll('[data-dec]').forEach(b => b.addEventListener('click', () => {
+      const g = list.groups.find(x => x.recipeId === Number(b.dataset.dec));
+      if (g && g.servings > 1) { g.servings--; persist(); render(); }
+    }));
+    root.querySelectorAll('[data-inc]').forEach(b => b.addEventListener('click', () => {
+      const g = list.groups.find(x => x.recipeId === Number(b.dataset.inc));
+      if (g && g.servings < 12) { g.servings++; persist(); render(); }
+    }));
+    root.querySelectorAll('[data-remove]').forEach(b => b.addEventListener('click', () => {
+      list.groups = list.groups.filter(x => x.recipeId !== Number(b.dataset.remove));
+      persist(); render();
+      Gimme.toast('Recipe removed from your list');
+    }));
+    root.querySelectorAll('[data-check]').forEach(b => b.addEventListener('click', () => {
+      const k = b.dataset.check;
+      list.checked[k] = !list.checked[k];
+      if (!list.checked[k]) delete list.checked[k];
+      persist(); render();
+    }));
+    root.querySelector('#clearChecked').addEventListener('click', () => { list.checked = {}; persist(); render(); });
+    root.querySelector('#clearAll').addEventListener('click', () => {
+      if (confirm('Remove all recipes and items from your shopping list?')) {
+        list = { groups: [], checked: {} }; persist(); render();
+      }
+    });
+  }
+
+  render();
+</script>
+</body>
+</html>

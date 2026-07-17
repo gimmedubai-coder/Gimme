@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Journal | Gimme</title>
+<meta name="description" content="Honest, no-hype articles about gut health, hormones, protein and feeling good.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css?v=3">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<nav class="nav" aria-label="Main navigation">
+  <a class="logo" href="index.html">gimme</a>
+  <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <div class="nav-links">
+    <a class="navlink" href="recipes.html">Recipes</a>
+    <a class="navlink" href="gut-health.html">Gut Health</a>
+    <a class="navlink" href="hormone-balance.html">Hormone Balance</a>
+    <a class="navlink" href="high-protein.html">High Protein</a>
+    <a class="navlink active" href="journal.html">Journal</a>
+    <a class="navlink" href="about.html">About Us</a>
+    <a class="btn btn-sm" href="signup.html">Sign Up</a>
+  </div>
+</nav>
+
+<main id="main" class="wrap" style="padding-top:48px;padding-bottom:88px">
+  <p class="eyebrow">JOURNAL</p>
+  <h1 class="h1" style="margin-bottom:14px">Honest reads, no hype</h1>
+  <p class="body-txt" style="opacity:.6;max-width:520px;margin:0 0 40px">
+    What we learn while cooking, tracking and reading the research, written so a normal human can use it.
+  </p>
+
+  <a class="card featured-card" id="featuredCard" href="article.html?slug=feeling-good-meaning" style="text-decoration:none;color:inherit;margin-bottom:44px"></a>
+
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:32px" id="chips"></div>
+
+  <div class="grid-3" id="articleGrid"></div>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-bottom" style="border:none">© 2026 gimme, made with love (and a lot of kimchi)</div>
+  </div>
+</footer>
+
+<script src="assets/js/data.js?v=3"></script>
+<script src="assets/js/app.js?v=3"></script>
+<script>
+  const CATS = [['all', 'All'], ['gut', 'Gut Health'], ['hormone', 'Hormone Balance'], ['protein', 'High Protein'], ['lifestyle', 'Lifestyle']];
+  let activeCat = new URLSearchParams(location.search).get('cat') || 'all';
+
+  const featured = ARTICLES.find(a => a.slug === 'feeling-good-meaning');
+  document.getElementById('featuredCard').href = 'article.html?slug=' + featured.slug;
+  document.getElementById('featuredCard').innerHTML = `
+    <img src="assets/img/about-team.jpg" alt="Gimmi_Samy and Renske cooking together" loading="lazy">
+    <div class="featured-body">
+      <div class="card-row" style="justify-content:flex-start;gap:10px">
+        <span class="pill tag neutral">FEATURED</span>
+        <span style="font:600 12px var(--font-head);opacity:.5">${featured.readTime}</span>
+      </div>
+      <h2 class="h2" style="margin:14px 0 10px">${featured.title}</h2>
+      <p style="opacity:.65;margin:0 0 20px">${featured.excerpt}</p>
+      <span style="font:700 14px var(--font-head);color:var(--accent)">Read article →</span>
+    </div>`;
+
+  function catLabel(c) { return (CATS.find(([k]) => k === c) || [null, c])[1]; }
+
+  function renderChips() {
+    document.getElementById('chips').innerHTML = CATS.map(([k, label]) =>
+      `<button class="filter-chip ${k === activeCat ? 'on' : ''}" data-cat="${k}">${label}</button>`).join('');
+    document.querySelectorAll('[data-cat]').forEach(b =>
+      b.addEventListener('click', () => { activeCat = b.dataset.cat; renderChips(); renderGrid(); }));
+  }
+
+  function renderGrid() {
+    const list = ARTICLES.filter(a => activeCat === 'all' || a.category === activeCat);
+    document.getElementById('articleGrid').innerHTML = list.map(a => `
+      <a class="card" href="article.html?slug=${a.slug}" style="text-decoration:none;color:inherit">
+        <div class="card-body">
+          <div class="card-row">
+            <span class="pill tag ${a.category === 'lifestyle' ? 'neutral' : a.category}">${a.category.replace('-', ' ').toUpperCase()}</span>
+            <span style="font:600 12px var(--font-head);opacity:.5">${a.readTime}</span>
+          </div>
+          <div class="card-title">${a.title}</div>
+          <p class="card-excerpt">${a.excerpt}</p>
+          <span style="font:700 13px var(--font-head);color:var(--accent);margin-top:auto">Read article →</span>
+        </div>
+      </a>`).join('');
+  }
+
+  renderChips(); renderGrid();
+</script>
+</body>
+</html>

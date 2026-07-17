@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Article | Gimme</title>
+<meta name="description" content="A Gimme journal article.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css?v=3">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<nav class="nav" aria-label="Main navigation">
+  <a class="logo" href="index.html">gimme</a>
+  <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <div class="nav-links">
+    <a class="navlink" href="recipes.html">Recipes</a>
+    <a class="navlink" href="gut-health.html">Gut Health</a>
+    <a class="navlink" href="hormone-balance.html">Hormone Balance</a>
+    <a class="navlink" href="high-protein.html">High Protein</a>
+    <a class="navlink active" href="journal.html">Journal</a>
+    <a class="navlink" href="about.html">About Us</a>
+    <a class="btn btn-sm" href="signup.html">Sign Up</a>
+  </div>
+</nav>
+
+<main id="main" class="wrap" style="padding-top:44px;padding-bottom:88px">
+  <div id="articleRoot"></div>
+
+  <section style="margin-top:72px">
+    <h2 class="h2" style="margin-bottom:26px">Keep reading</h2>
+    <div class="grid-3" id="relatedGrid"></div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-bottom" style="border:none">© 2026 gimme, made with love (and a lot of kimchi)</div>
+  </div>
+</footer>
+
+<script src="assets/js/data.js?v=3"></script>
+<script src="assets/js/app.js?v=3"></script>
+<script>
+  const slug = new URLSearchParams(location.search).get('slug');
+  const a = ARTICLES.find(x => x.slug === slug);
+  const root = document.getElementById('articleRoot');
+
+  if (!a) {
+    root.innerHTML = `
+      <div class="empty-state">
+        <h1 class="h2">Article not found</h1>
+        <p style="margin:12px 0 24px">This article doesn't exist (anymore).</p>
+        <a class="btn" href="journal.html">Back to the journal</a>
+      </div>`;
+  } else {
+    document.title = `${a.title} | Gimme`;
+    const key = 'article:' + a.slug;
+    const saved = Gimme.isSaved(key);
+    root.innerHTML = `
+      <a class="clear-filters" href="journal.html" style="display:inline-block;margin-bottom:26px">← Journal</a>
+      <div class="article-body">
+        <div class="card-row" style="justify-content:flex-start;gap:10px;margin-bottom:18px">
+          <span class="pill tag ${a.category === 'lifestyle' ? 'neutral' : a.category}">${a.category.replace('-', ' ').toUpperCase()}</span>
+          <span style="font:600 12px var(--font-head);opacity:.5">${a.readTime}</span>
+          <button class="save-btn ${saved ? 'saved' : ''}" data-save-key="${key}" aria-label="Save this article" aria-pressed="${saved}" style="position:static;box-shadow:none;border:1.5px solid var(--line-dark);margin-left:auto">
+            <span class="save-shape"></span>
+          </button>
+        </div>
+        <h1 class="h1" style="margin-bottom:18px">${a.title}</h1>
+        <p style="font-size:19px;line-height:1.65;opacity:.8;margin-bottom:8px"><strong>${a.intro}</strong></p>
+        ${a.sections.map(s => `
+          <h2>${s.h}</h2>
+          ${s.p.map(par => `<p>${par}</p>`).join('')}`).join('')}
+        <div class="panel" style="margin-top:40px;font-size:14px;opacity:.75">
+          This article is for general information only, it's not medical advice.
+          If something feels off for more than a few weeks, talk to a doctor.
+        </div>
+        <div class="save-slot" data-save-slot="${key}"></div>
+      </div>`;
+    Gimme.bindSaveButtons(root);
+
+    const related = ARTICLES.filter(x => x.slug !== a.slug && x.category === a.category)
+      .concat(ARTICLES.filter(x => x.slug !== a.slug && x.category !== a.category)).slice(0, 3);
+    document.getElementById('relatedGrid').innerHTML = related.map(x => `
+      <a class="card" href="article.html?slug=${x.slug}" style="text-decoration:none;color:inherit">
+        <div class="card-body">
+          <div class="card-row">
+            <span class="pill tag ${x.category === 'lifestyle' ? 'neutral' : x.category}">${x.category.replace('-', ' ').toUpperCase()}</span>
+            <span style="font:600 12px var(--font-head);opacity:.5">${x.readTime}</span>
+          </div>
+          <div class="card-title">${x.title}</div>
+          <p class="card-excerpt">${x.excerpt}</p>
+        </div>
+      </a>`).join('');
+  }
+</script>
+</body>
+</html>

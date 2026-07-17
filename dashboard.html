@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard | Gimme</title>
+<meta name="description" content="Your Gimme dashboard, cycle, saved recipes, shopping list and picks for you.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css?v=3">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<nav class="nav" aria-label="App navigation">
+  <a class="logo" href="dashboard.html">gimme</a>
+  <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <div class="nav-links">
+    <a class="navlink active" href="dashboard.html">Dashboard</a>
+    <a class="navlink" href="recipes.html">Recipes</a>
+    <a class="navlink" href="cycle-tracker.html">Cycle Tracker</a>
+    <a class="navlink" href="saved.html">Saved</a>
+    <a class="navlink" href="shopping-list.html">Shopping List</a>
+    <a class="avatar" href="signup.html" title="Your profile">G</a>
+  </div>
+</nav>
+
+<main id="main" class="wrap" style="padding-top:44px;padding-bottom:88px">
+  <p class="eyebrow" id="dateLine"></p>
+  <h1 class="h1" style="margin-bottom:36px" id="greeting">Hi there</h1>
+
+  <div class="grid-2" style="align-items:stretch;gap:24px;margin-bottom:24px">
+    <a class="panel panel-dark" href="cycle-tracker.html" style="text-decoration:none;display:flex;justify-content:space-between;align-items:center;gap:16px">
+      <div>
+        <p class="eyebrow" style="color:#fff;opacity:.55">YOUR CYCLE</p>
+        <div style="font:800 40px var(--font-head);line-height:1.05" id="cycleDay">…</div>
+        <div style="font:600 14px var(--font-head);margin-top:6px;opacity:.8" id="cyclePhase"></div>
+      </div>
+      <span style="font:700 14px var(--font-head)">Open tracker →</span>
+    </a>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+      <a class="panel" href="saved.html" style="text-decoration:none;display:flex;flex-direction:column;justify-content:center">
+        <div style="font:800 36px var(--font-head);color:var(--accent)" id="savedCount">0</div>
+        <div class="small" style="opacity:.55">saved items</div>
+      </a>
+      <a class="panel" href="shopping-list.html" style="text-decoration:none;display:flex;flex-direction:column;justify-content:center">
+        <div style="font:800 36px var(--font-head);color:var(--accent)" id="listCount">0</div>
+        <div class="small" style="opacity:.55">recipes on your list</div>
+      </a>
+    </div>
+  </div>
+
+  <h2 class="h3" style="margin:36px 0 16px">Quick actions</h2>
+  <div class="grid-4" style="margin-bottom:44px">
+    <a class="quick-action" href="recipes.html"><span class="qa-icon" style="background:var(--gut-bg)">🥬</span><span><strong>Browse recipes</strong><br><span class="small" style="opacity:.55">Filter by your focus</span></span></a>
+    <a class="quick-action" href="cycle-tracker.html"><span class="qa-icon" style="background:var(--hor-bg)">🌸</span><span><strong>Log today</strong><br><span class="small" style="opacity:.55">Symptoms &amp; period</span></span></a>
+    <a class="quick-action" href="shopping-list.html"><span class="qa-icon" style="background:var(--pro-bg)">🛒</span><span><strong>Go shopping</strong><br><span class="small" style="opacity:.55">Your ingredient list</span></span></a>
+    <a class="quick-action" href="journal.html"><span class="qa-icon" style="background:var(--anti-bg)">📖</span><span><strong>Read up</strong><br><span class="small" style="opacity:.55">Honest articles</span></span></a>
+  </div>
+
+  <div class="section-head">
+    <h2 class="h2">Picked for you</h2>
+    <a class="clear-filters" href="recipes.html">All recipes →</a>
+  </div>
+  <div class="grid-3" id="picksGrid"></div>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-bottom" style="border:none">© 2026 gimme, made with love (and a lot of kimchi)</div>
+  </div>
+</footer>
+
+<script src="assets/js/data.js?v=3"></script>
+<script src="assets/js/app.js?v=3"></script>
+<script>
+  const profile = Gimme.getProfile();
+  const now = new Date();
+  document.getElementById('dateLine').textContent =
+    now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
+  document.getElementById('greeting').textContent = profile && profile.name ? `Hi ${profile.name}` : 'Hi there';
+
+  // Cyclus-samenvatting (zelfde logica als de tracker)
+  const cycle = Gimme.load(Gimme.KEYS.cycle, { periodStarts: [] });
+  if (cycle.periodStarts.length) {
+    const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const last = cycle.periodStarts.map(s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); }).sort((a, b) => b - a)[0];
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const cd = ((Math.round((today - last) / 86400000) % 28) + 28) % 28 + 1;
+    const phase = cd <= 5 ? 'Menstrual' : cd <= 13 ? 'Follicular' : cd === 14 ? 'Ovulation' : 'Luteal';
+    document.getElementById('cycleDay').textContent = `Day ${cd}`;
+    document.getElementById('cyclePhase').textContent = `${phase} phase`;
+  } else {
+    document.getElementById('cycleDay').textContent = 'Start tracking';
+    document.getElementById('cyclePhase').textContent = 'Log your first period start';
+  }
+
+  // Tellers
+  const saved = Gimme.getSaved();
+  document.getElementById('savedCount').textContent = Object.keys(saved.items).length;
+  const list = Gimme.load(Gimme.KEYS.shopping, { groups: [] });
+  document.getElementById('listCount').textContent = list.groups.length;
+
+  // Picks op basis van profielfocus (fallback: gut)
+  const focuses = profile && profile.focuses && profile.focuses.length ? profile.focuses : ['gut', 'hormone', 'protein'];
+  const picks = RECIPES.filter(r => r.focuses.some(f => focuses.includes(f))).slice(0, 3);
+  document.getElementById('picksGrid').innerHTML = picks.map(r => Gimme.recipeCard(r)).join('');
+  Gimme.bindSaveButtons(document.getElementById('picksGrid'));
+</script>
+</body>
+</html>

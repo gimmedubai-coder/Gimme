@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recipe | Gimme</title>
+<meta name="description" content="A Gimme recipe with ingredients, steps and a shopping list button.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css?v=3">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<nav class="nav" aria-label="Main navigation">
+  <a class="logo" href="index.html">gimme</a>
+  <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <div class="nav-links">
+    <a class="navlink active" href="recipes.html">Recipes</a>
+    <a class="navlink" href="gut-health.html">Gut Health</a>
+    <a class="navlink" href="hormone-balance.html">Hormone Balance</a>
+    <a class="navlink" href="high-protein.html">High Protein</a>
+    <a class="navlink" href="journal.html">Journal</a>
+    <a class="navlink" href="about.html">About Us</a>
+    <a class="btn btn-sm" href="signup.html">Sign Up</a>
+  </div>
+</nav>
+
+<main id="main" class="wrap" style="padding-top:40px;padding-bottom:88px">
+  <div id="recipeRoot"></div>
+
+  <section style="margin-top:72px">
+    <h2 class="h2" style="margin-bottom:26px">More like this</h2>
+    <div class="grid-3" id="relatedGrid"></div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-bottom" style="border:none">© 2026 gimme, made with love (and a lot of kimchi)</div>
+  </div>
+</footer>
+
+<script src="assets/js/data.js?v=3"></script>
+<script src="assets/js/app.js?v=3"></script>
+<script>
+  const id = Number(new URLSearchParams(location.search).get('id')) || 19;
+  const r = Gimme.recipeById(id);
+  const root = document.getElementById('recipeRoot');
+
+  if (!r) {
+    root.innerHTML = `
+      <div class="empty-state">
+        <h1 class="h2">Recipe not found</h1>
+        <p style="margin:12px 0 24px">This recipe doesn't exist (anymore).</p>
+        <a class="btn" href="recipes.html">Browse all recipes</a>
+      </div>`;
+  } else {
+    document.title = `${r.title} | Gimme`;
+    let servings = r.serves;
+
+    const fmt = (qty, unit) => {
+      const scaled = qty * servings / r.serves;
+      const val = scaled >= 100 ? Math.round(scaled) : Math.round(scaled * 10) / 10;
+      return `${val} ${unit}`;
+    };
+
+    function render() {
+      const key = 'recipe:' + r.id;
+      const saved = Gimme.isSaved(key);
+      root.innerHTML = `
+        <a class="clear-filters" href="recipes.html" style="display:inline-block;margin-bottom:22px">← All recipes</a>
+        <div class="grid-2" style="align-items:start;gap:48px">
+          <div style="position:relative">
+            <img src="${r.img}" alt="Gimmi_${r.title}" style="border-radius:18px;width:100%;aspect-ratio:4/3;object-fit:cover">
+            <button class="save-btn ${saved ? 'saved' : ''}" data-save-key="${key}" aria-label="Save this recipe" aria-pressed="${saved}" style="width:44px;height:44px;top:16px;right:16px">
+              <span class="save-shape" style="width:14px;height:17px"></span>
+            </button>
+            <div class="save-slot" data-save-slot="${key}" style="position:absolute;top:64px;right:16px;width:230px;z-index:20"></div>
+          </div>
+          <div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+              ${r.focuses.map(f => `<span class="pill tag ${f}">${FOCUS_LABELS[f]}</span>`).join('')}
+              ${r.tags.map(t => `<span class="pill tag neutral">${Gimme.tagLabel(t)}</span>`).join('')}
+            </div>
+            <h1 class="h1" style="margin-bottom:14px">${r.title}</h1>
+            <p class="body-txt" style="opacity:.65;margin:0 0 22px">${r.excerpt}</p>
+            <div style="display:flex;gap:26px;font:600 13px var(--font-head);opacity:.6;margin-bottom:28px">
+              <span>⏱ ${r.time}</span>
+              <span>🍽 Base: ${r.serves} serving${r.serves > 1 ? 's' : ''}</span>
+            </div>
+
+            <div class="panel" style="margin-bottom:20px">
+              <div class="card-row" style="margin-bottom:18px">
+                <h2 class="h3">Ingredients</h2>
+                <div class="stepper">
+                  <button type="button" id="minus" aria-label="Fewer servings">−</button>
+                  <span class="val">${servings} serving${servings > 1 ? 's' : ''}</span>
+                  <button type="button" id="plus" aria-label="More servings">+</button>
+                </div>
+              </div>
+              <ul style="list-style:none;margin:0;padding:0">
+                ${r.ingredients.map(i => `
+                  <li class="item-row">
+                    <span class="grow">${i.name}</span>
+                    <span class="item-amount">${fmt(i.qty, i.unit)}</span>
+                  </li>`).join('')}
+              </ul>
+              <button class="btn" id="addList" style="width:100%;margin-top:18px">Add to shopping list</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="max-width:760px;margin-top:44px">
+          <h2 class="h3" style="margin-bottom:18px">Method</h2>
+          <ol style="margin:0;padding-left:0;list-style:none;counter-reset:step">
+            ${r.steps.map((s, i) => `
+              <li style="display:flex;gap:16px;margin-bottom:20px;counter-increment:step">
+                <span style="flex-shrink:0;width:32px;height:32px;border-radius:50%;background:var(--pill-bg);color:var(--pill-ink);font:700 14px var(--font-head);display:flex;align-items:center;justify-content:center">${i + 1}</span>
+                <p style="margin:4px 0 0">${s}</p>
+              </li>`).join('')}
+          </ol>
+        </div>`;
+
+      root.querySelector('#minus').addEventListener('click', () => { if (servings > 1) { servings--; render(); } });
+      root.querySelector('#plus').addEventListener('click', () => { if (servings < 12) { servings++; render(); } });
+      root.querySelector('#addList').addEventListener('click', () => {
+        const list = Gimme.load(Gimme.KEYS.shopping, { groups: [], checked: {} });
+        const existing = list.groups.find(g => g.recipeId === r.id);
+        if (existing) existing.servings = servings;
+        else list.groups.push({ recipeId: r.id, servings });
+        Gimme.save(Gimme.KEYS.shopping, list);
+        Gimme.toast(`Added to your shopping list (${servings} serving${servings > 1 ? 's' : ''})`);
+      });
+      Gimme.bindSaveButtons(root);
+    }
+    render();
+
+    // Gerelateerde recepten (zelfde focus, excl. huidige)
+    const related = RECIPES.filter(x => x.id !== r.id && x.focuses.some(f => r.focuses.includes(f))).slice(0, 3);
+    document.getElementById('relatedGrid').innerHTML = related.map(x => Gimme.recipeCard(x)).join('');
+    Gimme.bindSaveButtons(document.getElementById('relatedGrid'));
+  }
+</script>
+</body>
+</html>

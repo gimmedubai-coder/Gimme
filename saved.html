@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Saved | Gimme</title>
+<meta name="description" content="Your saved recipes and articles, organized in folders.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css?v=3">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<nav class="nav" aria-label="App navigation">
+  <a class="logo" href="dashboard.html">gimme</a>
+  <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <div class="nav-links">
+    <a class="navlink" href="dashboard.html">Dashboard</a>
+    <a class="navlink" href="recipes.html">Recipes</a>
+    <a class="navlink" href="cycle-tracker.html">Cycle Tracker</a>
+    <a class="navlink active" href="saved.html">Saved</a>
+    <a class="navlink" href="shopping-list.html">Shopping List</a>
+    <a class="avatar" href="signup.html" title="Your profile">G</a>
+  </div>
+</nav>
+
+<main id="main" class="wrap" style="padding-top:44px;padding-bottom:88px">
+  <p class="eyebrow">SAVED</p>
+  <h1 class="h1" style="margin-bottom:36px">Your collection</h1>
+
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:36px" id="folderBar"></div>
+
+  <div class="grid-3" id="itemsGrid"></div>
+  <div class="empty-state" id="emptyState" hidden>
+    <h3 class="h3">Nothing here yet</h3>
+    <p style="margin:10px 0 22px">Save recipes and articles with the bookmark button, they'll show up here.</p>
+    <a class="btn" href="recipes.html">Browse recipes</a>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-bottom" style="border:none">© 2026 gimme, made with love (and a lot of kimchi)</div>
+  </div>
+</footer>
+
+<script src="assets/js/data.js?v=3"></script>
+<script src="assets/js/app.js?v=3"></script>
+<script>
+  let activeFolder = 'all';
+
+  function resolveItem(key) {
+    const [type, id] = key.split(':');
+    if (type === 'recipe') {
+      const r = Gimme.recipeById(Number(id));
+      return r && { kind: 'recipe', data: r };
+    }
+    const a = ARTICLES.find(x => x.slug === id);
+    return a && { kind: 'article', data: a };
+  }
+
+  function articleCard(a) {
+    return `
+      <a class="card" href="article.html?slug=${a.slug}" style="text-decoration:none;color:inherit">
+        <div class="card-body">
+          <div class="card-row">
+            <span class="pill tag ${a.category === 'lifestyle' ? 'neutral' : a.category}">${a.category.replace('-', ' ').toUpperCase()}</span>
+            <span style="font:600 12px var(--font-head);opacity:.5">${a.readTime}</span>
+          </div>
+          <div class="card-title">${a.title}</div>
+          <p class="card-excerpt">${a.excerpt}</p>
+          <span style="font:700 13px var(--font-head);color:var(--accent);margin-top:auto">Read article →</span>
+        </div>
+      </a>`;
+  }
+
+  function render() {
+    const s = Gimme.getSaved();
+    const counts = {};
+    Object.entries(s.items).forEach(([key, folders]) => folders.forEach(f => counts[f] = (counts[f] || 0) + 1));
+
+    document.getElementById('folderBar').innerHTML = `
+      <button class="filter-chip ${activeFolder === 'all' ? 'on' : ''}" data-folder="all">All items (${Object.keys(s.items).length})</button>
+      ${s.folders.map(f => `
+        <button class="filter-chip ${activeFolder === f.id ? 'on' : ''}" data-folder="${f.id}">${f.name} (${counts[f.id] || 0})</button>`).join('')}`;
+    document.querySelectorAll('[data-folder]').forEach(b =>
+      b.addEventListener('click', () => { activeFolder = b.dataset.folder; render(); }));
+
+    const keys = Object.entries(s.items)
+      .filter(([key, folders]) => activeFolder === 'all' || folders.includes(activeFolder))
+      .map(([key]) => key);
+
+    const grid = document.getElementById('itemsGrid');
+    grid.innerHTML = keys.map(key => {
+      const item = resolveItem(key);
+      if (!item) return '';
+      return item.kind === 'recipe' ? Gimme.recipeCard(item.data) : articleCard(item.data);
+    }).join('');
+    Gimme.bindSaveButtons(grid);
+    document.getElementById('emptyState').hidden = keys.length > 0;
+  }
+
+  render();
+</script>
+</body>
+</html>

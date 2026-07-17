@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cycle Tracker | Gimme</title>
+<meta name="description" content="Track your cycle, log symptoms and get phase-matched recipe suggestions.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css?v=3">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<nav class="nav" aria-label="App navigation">
+  <a class="logo" href="dashboard.html">gimme</a>
+  <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <div class="nav-links">
+    <a class="navlink" href="dashboard.html">Dashboard</a>
+    <a class="navlink" href="recipes.html">Recipes</a>
+    <a class="navlink active" href="cycle-tracker.html">Cycle Tracker</a>
+    <a class="navlink" href="saved.html">Saved</a>
+    <a class="navlink" href="shopping-list.html">Shopping List</a>
+    <a class="avatar" href="signup.html" title="Your profile">G</a>
+  </div>
+</nav>
+
+<main id="main" class="wrap" style="padding-top:44px;padding-bottom:88px">
+  <p class="eyebrow">CYCLE TRACKER</p>
+  <h1 class="h1" style="margin-bottom:10px">Know where you are</h1>
+  <p class="body-txt" style="opacity:.6;max-width:520px;margin:0 0 36px">
+    Log your period starts and daily symptoms. We estimate your phase, and match recipes to it.
+  </p>
+
+  <div class="grid-2" style="align-items:start;gap:32px" id="trackerGrid">
+    <div>
+      <div class="panel" style="margin-bottom:24px">
+        <div class="card-row" style="margin-bottom:20px">
+          <h2 class="h3" id="calTitle">Month</h2>
+          <div class="cal-nav">
+            <button type="button" id="prevMonth" aria-label="Previous month">←</button>
+            <button type="button" id="todayBtn" style="width:auto;padding:0 14px;border-radius:100px;font:700 12px var(--font-head)">Today</button>
+            <button type="button" id="nextMonth" aria-label="Next month">→</button>
+          </div>
+        </div>
+        <div class="calendar" id="calendar"></div>
+        <div class="legend">
+          <span class="legend-item"><span class="legend-dot" style="background:var(--period)"></span>Period</span>
+          <span class="legend-item"><span class="legend-dot" style="background:oklch(0.85 0.09 25)"></span>Predicted</span>
+          <span class="legend-item"><span class="legend-dot" style="background:var(--fertile)"></span>Fertile window</span>
+          <span class="legend-item"><span class="legend-dot" style="background:var(--ovulation)"></span>Ovulation</span>
+        </div>
+      </div>
+
+      <div class="panel" id="dayPanel">
+        <h2 class="h3" style="margin-bottom:6px" id="selectedTitle">Select a day</h2>
+        <p class="small" style="opacity:.55;margin:0 0 18px" id="selectedHint">Click any day in the calendar to log symptoms or a period start.</p>
+        <div id="dayEditor" hidden>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px" id="symptomChips"></div>
+          <button class="btn btn-ghost btn-sm" id="periodToggle"></button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel panel-dark" style="margin-bottom:24px" id="phaseCard"></div>
+      <div class="panel" id="phaseInfo"></div>
+      <h2 class="h3" style="margin:28px 0 16px">Recipes for this phase</h2>
+      <div class="grid-3" id="phaseRecipes" style="grid-template-columns:1fr"></div>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-bottom" style="border:none">© 2026 gimme, made with love (and a lot of kimchi)</div>
+  </div>
+</footer>
+
+<script src="assets/js/data.js?v=3"></script>
+<script src="assets/js/app.js?v=3"></script>
+<script>
+  const CYCLE_LEN = 28, PERIOD_LEN = 5;
+  const SYMPTOMS = ['Cramps', 'Bloating', 'Headache', 'Fatigue', 'Mood swings', 'Tender breasts', 'Cravings', 'Good energy'];
+  const PHASES = {
+    menstrual:  { name: 'Menstrual',  days: 'Day 1–5',   color: 'var(--period)',     tip: 'Warm, iron-rich, comforting food. Rest is productive too.' },
+    follicular: { name: 'Follicular', days: 'Day 6–13',  color: 'var(--gut-accent)', tip: 'Energy climbs, great moment for fresh, light, experimental meals.' },
+    ovulation:  { name: 'Ovulation',  days: '~Day 14',   color: 'var(--hor-accent)', tip: 'Peak energy for most people. Protein-forward meals work well now.' },
+    luteal:     { name: 'Luteal',     days: 'Day 15–28', color: 'var(--anti-accent)',tip: 'Steady blood sugar helps: fiber + protein at every meal.' },
+  };
+
+  const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const parseISO = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+  const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+
+  let store = Gimme.load(Gimme.KEYS.cycle, { periodStarts: [], symptoms: {} });
+  if (!store.periodStarts.length) {
+    // Zachte start: een voorbeeld-start 9 dagen geleden, zodat de tracker direct iets toont
+    store.periodStarts = [iso(addDays(today, -9))];
+    Gimme.save(Gimme.KEYS.cycle, store);
+  }
+
+  let viewDate = new Date(today.getFullYear(), today.getMonth(), 1);
+  let selectedDay = iso(today);
+
+  const lastStart = () => store.periodStarts.map(parseISO).sort((a, b) => b - a)[0];
+
+  function cycleDayFor(date) {
+    const ls = lastStart();
+    if (!ls) return null;
+    const diff = Math.round((date - ls) / 86400000);
+    return (diff % CYCLE_LEN + CYCLE_LEN) % CYCLE_LEN + 1;
+  }
+
+  function phaseFor(cycleDay) {
+    if (cycleDay <= 5) return 'menstrual';
+    if (cycleDay <= 13) return 'follicular';
+    if (cycleDay === 14) return 'ovulation';
+    return 'luteal';
+  }
+
+  function dayType(date) {
+    // Gelogde periodes
+    for (const s of store.periodStarts.map(parseISO)) {
+      if (date >= s && date < addDays(s, PERIOD_LEN)) return 'period';
+    }
+    const cd = cycleDayFor(date);
+    if (cd >= 1 && cd <= 5 && date > today) return 'predicted';
+    if (cd === 14) return 'ovulation';
+    if (cd >= 10 && cd <= 16) return 'fertile';
+    return null;
+  }
+
+  /* ---------- Kalender ---------- */
+  function renderCalendar() {
+    const y = viewDate.getFullYear(), m = viewDate.getMonth();
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    document.getElementById('calTitle').textContent = `${monthNames[m]} ${y}`;
+
+    const first = new Date(y, m, 1);
+    const startOffset = (first.getDay() + 6) % 7; // maandag = 0
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+
+    let html = ['MON','TUE','WED','THU','FRI','SAT','SUN'].map(d => `<div class="cal-wd">${d}</div>`).join('');
+    for (let i = 0; i < startOffset; i++) html += '<button class="cal-day" disabled aria-hidden="true"></button>';
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = new Date(y, m, d);
+      const key = iso(date);
+      const type = dayType(date);
+      const isToday = key === iso(today);
+      const isSelected = key === selectedDay;
+      const hasSymptoms = (store.symptoms[key] || []).length > 0;
+      html += `
+        <button class="cal-day ${type === 'period' ? 'period' : ''} ${type === 'predicted' ? 'period' : ''} ${type === 'fertile' ? 'fertile' : ''} ${type === 'ovulation' ? 'ovulation' : ''} ${isToday ? 'today' : ''}"
+          data-day="${key}" aria-label="${key}"
+          style="${type === 'predicted' ? 'background:oklch(0.85 0.09 25);color:#fff' : ''}${isSelected ? 'box-shadow:0 0 0 2px var(--ink)' : ''}">
+          ${d}${hasSymptoms ? '<span style="width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.7"></span>' : ''}
+        </button>`;
+    }
+    document.getElementById('calendar').innerHTML = html;
+    document.querySelectorAll('[data-day]').forEach(b =>
+      b.addEventListener('click', () => { selectedDay = b.dataset.day; renderCalendar(); renderDayEditor(); }));
+  }
+
+  /* ---------- Dag-editor ---------- */
+  function renderDayEditor() {
+    const date = parseISO(selectedDay);
+    const opts = { weekday: 'long', day: 'numeric', month: 'long' };
+    document.getElementById('selectedTitle').textContent = date.toLocaleDateString('en-GB', opts);
+    document.getElementById('selectedHint').hidden = false;
+    document.getElementById('selectedHint').textContent =
+      `Cycle day ${cycleDayFor(date)}, ${PHASES[phaseFor(cycleDayFor(date))].name.toLowerCase()} phase`;
+    document.getElementById('dayEditor').hidden = false;
+
+    const logged = store.symptoms[selectedDay] || [];
+    document.getElementById('symptomChips').innerHTML = SYMPTOMS.map(s =>
+      `<button class="symptom-chip ${logged.includes(s) ? 'on' : ''}" data-symptom="${s}">${s}</button>`).join('');
+    document.querySelectorAll('[data-symptom]').forEach(b =>
+      b.addEventListener('click', () => {
+        const s = b.dataset.symptom;
+        const arr = store.symptoms[selectedDay] || [];
+        store.symptoms[selectedDay] = arr.includes(s) ? arr.filter(x => x !== s) : [...arr, s];
+        if (!store.symptoms[selectedDay].length) delete store.symptoms[selectedDay];
+        Gimme.save(Gimme.KEYS.cycle, store);
+        renderDayEditor(); renderCalendar();
+      }));
+
+    const isStart = store.periodStarts.includes(selectedDay);
+    const btn = document.getElementById('periodToggle');
+    btn.textContent = isStart ? '✕ Remove period start' : '● Log as period start';
+    btn.onclick = () => {
+      store.periodStarts = isStart
+        ? store.periodStarts.filter(s => s !== selectedDay)
+        : [...store.periodStarts, selectedDay].sort();
+      Gimme.save(Gimme.KEYS.cycle, store);
+      renderAll();
+    };
+  }
+
+  /* ---------- Fase-kaart & recepten ---------- */
+  function renderPhase() {
+    const cd = cycleDayFor(today);
+    const phase = phaseFor(cd);
+    const info = PHASES[phase];
+    const nextStart = addDays(lastStart(), CYCLE_LEN * Math.ceil((today - lastStart()) / 86400000 / CYCLE_LEN));
+    const daysToNext = Math.max(0, Math.round((nextStart - today) / 86400000));
+
+    document.getElementById('phaseCard').innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
+        <div>
+          <p class="eyebrow" style="color:#fff;opacity:.55">TODAY</p>
+          <div style="font:800 44px var(--font-head);line-height:1">Day ${cd}</div>
+          <div style="font:700 16px var(--font-head);margin-top:6px;color:oklch(0.9 0.05 330)">${info.name} phase</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font:700 26px var(--font-head)">${daysToNext}</div>
+          <div class="small" style="opacity:.6">day${daysToNext === 1 ? '' : 's'} to next period (est.)</div>
+        </div>
+      </div>`;
+
+    document.getElementById('phaseInfo').innerHTML = `
+      <h3 class="h3" style="margin-bottom:8px">${info.name} <span style="opacity:.45;font:600 13px var(--font-body)">(${info.days})</span></h3>
+      <p style="opacity:.65;margin:0">${info.tip}</p>
+      <p class="small" style="opacity:.45;margin:14px 0 0">Estimates assume a ${CYCLE_LEN}-day cycle from your last logged period. Every body is different, treat this as a guide, not a diagnosis.</p>`;
+
+    document.getElementById('phaseRecipes').innerHTML =
+      PHASE_RECIPE_IDS[phase].map(id => Gimme.recipeCard(Gimme.recipeById(id), { showTags: false })).join('');
+    Gimme.bindSaveButtons(document.getElementById('phaseRecipes'));
+  }
+
+  function renderAll() { renderCalendar(); renderDayEditor(); renderPhase(); }
+
+  document.getElementById('prevMonth').addEventListener('click', () => { viewDate.setMonth(viewDate.getMonth() - 1); renderCalendar(); });
+  document.getElementById('nextMonth').addEventListener('click', () => { viewDate.setMonth(viewDate.getMonth() + 1); renderCalendar(); });
+  document.getElementById('todayBtn').addEventListener('click', () => { viewDate = new Date(today.getFullYear(), today.getMonth(), 1); selectedDay = iso(today); renderAll(); });
+
+  renderAll();
+</script>
+</body>
+</html>

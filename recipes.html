@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recipes | Gimme</title>
+<meta name="description" content="All Gimme recipes, filter by focus, diet, meat and meal type.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css?v=3">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<nav class="nav" aria-label="Main navigation">
+  <a class="logo" href="index.html">gimme</a>
+  <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <div class="nav-links">
+    <a class="navlink active" href="recipes.html">Recipes</a>
+    <a class="navlink" href="gut-health.html">Gut Health</a>
+    <a class="navlink" href="hormone-balance.html">Hormone Balance</a>
+    <a class="navlink" href="high-protein.html">High Protein</a>
+    <a class="navlink" href="journal.html">Journal</a>
+    <a class="navlink" href="about.html">About Us</a>
+    <a class="btn btn-sm" href="signup.html">Sign Up</a>
+  </div>
+</nav>
+
+<main id="main" class="wrap" style="padding-top:48px;padding-bottom:88px">
+  <div class="section-head" style="align-items:flex-end">
+    <div>
+      <p class="eyebrow">RECIPES</p>
+      <h1 class="h1">What do you feel like?</h1>
+    </div>
+    <p class="body-txt" style="opacity:.6;max-width:360px;margin:0">
+      Filter by what your body needs this week. Save favorites to your own folders.
+    </p>
+  </div>
+
+  <div class="filter-bar" style="margin:32px 0 36px" id="filterBar">
+    <div id="dropdowns" style="display:flex;gap:14px;flex-wrap:wrap"></div>
+    <span class="count-badge" id="countBadge"></span>
+    <button class="clear-filters" id="clearBtn" hidden>Clear all</button>
+  </div>
+
+  <div class="grid-3" id="recipeGrid"></div>
+  <div class="empty-state" id="emptyState" hidden>
+    <h3 class="h3">No recipes match those filters</h3>
+    <p>Try removing one or two filters.</p>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-bottom" style="border:none">© 2026 gimme, made with love (and a lot of kimchi)</div>
+  </div>
+</footer>
+
+<script src="assets/js/data.js?v=3"></script>
+<script src="assets/js/app.js?v=3"></script>
+<script>
+  const FILTER_GROUPS = [
+    { key: 'focus', label: 'Focus', options: [['gut','Gut Health'],['hormone','Hormone Balance'],['protein','High Protein'],['anti-inflammatory','Anti-Inflammatory']] },
+    { key: 'diet', label: 'Diet', options: [['vegan','Vegan'],['vegetarian','Vegetarian'],['low-carb','Low Carb'],['high-fiber','High Fiber'],['high-protein','High Protein']] },
+    { key: 'meat', label: 'Meat', options: [['chicken','Chicken'],['beef','Beef'],['fish','Fish'],['none','No Meat']] },
+    { key: 'meal', label: 'Meal', options: [['breakfast','Breakfast'],['lunch','Lunch'],['dinner','Dinner'],['snack','Snacks'],['drink','Drinks']] },
+  ];
+  const state = { focus: new Set(), diet: new Set(), meat: new Set(), meal: new Set() };
+  const params = new URLSearchParams(location.search);
+
+  // URL-parameters (bijv. ?focus=gut vanaf pijlerpagina's)
+  for (const g of FILTER_GROUPS) {
+    const v = params.get(g.key);
+    if (v) v.split(',').forEach(x => state[g.key].add(x));
+  }
+
+  function matches(r) {
+    const focusOk = !state.focus.size || r.focuses.some(f => state.focus.has(f));
+    const dietOk  = !state.diet.size  || [...state.diet].every(d => r.tags.includes(d));
+    const mealOk  = !state.meal.size  || [...state.meal].every(m => r.tags.includes(m));
+    let meatOk = true;
+    if (state.meat.size) {
+      meatOk = [...state.meat].some(m =>
+        m === 'none' ? !r.meat : r.meat === m);
+    }
+    return focusOk && dietOk && mealOk && meatOk;
+  }
+
+  function renderDropdowns() {
+    document.getElementById('dropdowns').innerHTML = FILTER_GROUPS.map(g => `
+      <div class="dd" data-group="${g.key}">
+        <button class="dd-btn ${state[g.key].size ? 'has-active' : ''}" aria-haspopup="true" aria-expanded="false">
+          ${g.label}${state[g.key].size ? `<span class="dd-badge">${state[g.key].size}</span>` : ''}
+          <span class="dd-caret">▾</span>
+        </button>
+        <div class="dd-panel" hidden>
+          ${g.options.map(([val, label]) => `
+            <button class="dd-opt" data-val="${val}">
+              <span class="dd-check ${state[g.key].has(val) ? 'on' : ''}"></span>${label}
+            </button>`).join('')}
+        </div>
+      </div>`).join('');
+
+    document.querySelectorAll('.dd').forEach(dd => {
+      const btn = dd.querySelector('.dd-btn');
+      const panel = dd.querySelector('.dd-panel');
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const open = !panel.hidden;
+        document.querySelectorAll('.dd-panel').forEach(p => p.hidden = true);
+        document.querySelectorAll('.dd').forEach(d => d.classList.remove('open'));
+        if (!open) { panel.hidden = false; dd.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); }
+      });
+      dd.querySelectorAll('.dd-opt').forEach(opt => {
+        opt.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const set = state[dd.dataset.group];
+          const val = opt.dataset.val;
+          set.has(val) ? set.delete(val) : set.add(val);
+          opt.querySelector('.dd-check').classList.toggle('on');
+          renderAll(false);
+          // badges bijwerken zonder het panel te sluiten
+          const b = dd.querySelector('.dd-btn');
+          b.classList.toggle('has-active', set.size > 0);
+          b.innerHTML = `${FILTER_GROUPS.find(g => g.key === dd.dataset.group).label}${set.size ? `<span class="dd-badge">${set.size}</span>` : ''} <span class="dd-caret">▾</span>`;
+        });
+      });
+    });
+  }
+
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.dd-panel').forEach(p => p.hidden = true);
+    document.querySelectorAll('.dd').forEach(d => d.classList.remove('open'));
+  });
+
+  function renderGrid() {
+    const list = RECIPES.filter(matches);
+    const grid = document.getElementById('recipeGrid');
+    grid.innerHTML = list.map(r => Gimme.recipeCard(r)).join('');
+    Gimme.bindSaveButtons(grid);
+    document.getElementById('emptyState').hidden = list.length > 0;
+    document.getElementById('countBadge').textContent = `${list.length} recipe${list.length === 1 ? '' : 's'}`;
+    const anyFilter = Object.values(state).some(s => s.size);
+    document.getElementById('clearBtn').hidden = !anyFilter;
+  }
+
+  function renderAll(rebuildDropdowns = true) {
+    if (rebuildDropdowns) renderDropdowns();
+    renderGrid();
+  }
+
+  document.getElementById('clearBtn').addEventListener('click', () => {
+    Object.values(state).forEach(s => s.clear());
+    renderAll();
+  });
+
+  renderAll();
+</script>
+</body>
+</html>
