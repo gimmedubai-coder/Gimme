@@ -64,6 +64,8 @@ a { color: inherit; }
 .wrap { max-width: 1400px; margin: 0 auto; padding-left: clamp(20px, 4vw, 56px); padding-right: clamp(20px, 4vw, 56px); }
 .section { padding-bottom: clamp(56px, 7vw, 88px); }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+.recipe-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 48px; align-items: start; }
+.recipe-side { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 20px; }
 .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
 .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
 .section-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 26px; gap: 16px; flex-wrap: wrap; }
@@ -286,6 +288,16 @@ a.card:hover, .card.hover:hover { transform: translateY(-5px); box-shadow: var(-
 .stepper .val { font: 700 14px var(--font-head); min-width: 80px; text-align: center; }
 .remove-link { font: 700 13px var(--font-head); color: oklch(0.55 0.15 25); cursor: pointer; background: none; border: none; }
 
+/* ---------- Nutrition / macros ---------- */
+.nutrition-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.nutrition-item { text-align: center; padding: 14px 6px; border-radius: 12px; background: var(--bg-soft); }
+.nutrition-item .amount { font: 800 20px var(--font-head); color: var(--ink); line-height: 1.1; }
+.nutrition-item .label { font: 600 11px var(--font-body); opacity: 0.6; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.03em; }
+.nutrition-note { font-size: 12px; opacity: 0.55; margin: 14px 0 0; }
+@media (max-width: 480px) {
+  .nutrition-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
 /* ---------- Sign up ---------- */
 .auth-grid { display: grid; grid-template-columns: 1fr 1fr; min-height: calc(100vh - 86px); }
 .auth-panel { display: flex; flex-direction: column; justify-content: center; padding: clamp(24px, 5vw, 72px); max-width: 560px; margin: 0 auto; width: 100%; }
@@ -367,7 +379,8 @@ a.card:hover, .card.hover:hover { transform: translateY(-5px); box-shadow: var(-
   .nav-links.open { display: flex; }
   .nav-links .navlink { padding: 8px 0; font-size: 16px; }
   .nav-links .btn { margin-top: 10px; }
-  .hero, .grid-2, .week-detail, .featured-card, .newsletter, .auth-grid { grid-template-columns: 1fr; }
+  .hero, .grid-2, .recipe-grid, .week-detail, .featured-card, .newsletter, .auth-grid { grid-template-columns: 1fr; }
+  .recipe-side { position: static; }
   .auth-img { min-height: 240px; max-height: 320px; }
 }
 
