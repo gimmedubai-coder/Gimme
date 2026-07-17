@@ -67,6 +67,17 @@ const Gimme = (() => {
     if (sb) { try { await sb.auth.signOut(); } catch (e) { /* offline, negeren */ } }
   }
 
+  // "Doorgaan met Google": stuurt de browser naar Google's inlogscherm, komt terug op
+  // dashboard.html met een sessie (nieuw account of bestaand, net als de magic link).
+  async function signInWithGoogle() {
+    if (!sb) return { error: { message: 'Supabase not loaded' } };
+    const redirectTo = location.origin + location.pathname.replace(/[^/]*$/, '') + 'dashboard.html';
+    return sb.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo },
+    });
+  }
+
   /* ---------- Opslag ---------- */
   const KEYS = {
     saved: 'gimme_saved',
@@ -206,7 +217,9 @@ const Gimme = (() => {
     const profile = getProfile();
 
     if (!profile) {
-      slot.innerHTML = `<a class="btn btn-sm" href="signup.html">Sign Up</a>`;
+      slot.innerHTML = `
+        <a class="navlink" href="login.html">Log in</a>
+        <a class="btn btn-sm" href="signup.html">Sign Up</a>`;
       return;
     }
 
@@ -413,6 +426,6 @@ const Gimme = (() => {
     getProfile, setProfile, isLoggedIn, logout, requireAuth,
     recipeById, recipeCard, focusLabel, focusClass, tagLabel, bindSaveButtons,
     setPageMeta, toISODuration, trackEvent,
-    signInWithEmail, getCloudSession, pullFromCloud, cloudSignOut,
+    signInWithEmail, getCloudSession, pullFromCloud, cloudSignOut, signInWithGoogle,
   };
 })();
