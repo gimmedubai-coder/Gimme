@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/styles.css?v=4">
+<link rel="stylesheet" href="assets/css/styles.css?v=5">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -23,7 +23,7 @@
     <a class="navlink" href="cycle-tracker.html">Cycle Tracker</a>
     <a class="navlink" href="saved.html">Saved</a>
     <a class="navlink" href="shopping-list.html">Shopping List</a>
-    <a class="avatar" href="signup.html" title="Your profile">G</a>
+    <a class="avatar" href="#account" title="Your profile">G</a>
   </div>
 </nav>
 
@@ -65,6 +65,13 @@
     <a class="clear-filters" href="recipes.html">All recipes →</a>
   </div>
   <div class="grid-3" id="picksGrid"></div>
+
+  <section class="panel" id="account" style="margin-top:56px;scroll-margin-top:24px">
+    <h2 class="h3" style="margin-bottom:18px">Your account</h2>
+    <p class="body-txt" style="margin:0 0 4px" id="acctName"></p>
+    <p class="small" style="opacity:.6;margin:0 0 22px" id="acctEmail"></p>
+    <button class="btn btn-ghost" id="logoutBtn">Log out</button>
+  </section>
 </main>
 
 <footer class="footer">
@@ -73,14 +80,18 @@
   </div>
 </footer>
 
-<script src="assets/js/data.js?v=4"></script>
-<script src="assets/js/app.js?v=4"></script>
+<script src="assets/js/data.js?v=5"></script>
+<script src="assets/js/app.js?v=5"></script>
 <script>
+  Gimme.requireAuth();
   const profile = Gimme.getProfile();
   const now = new Date();
   document.getElementById('dateLine').textContent =
     now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
   document.getElementById('greeting').textContent = profile && profile.name ? `Hi ${profile.name}` : 'Hi there';
+  document.getElementById('acctName').textContent = profile.name;
+  document.getElementById('acctEmail').textContent = profile.email;
+  document.getElementById('logoutBtn').addEventListener('click', () => Gimme.logout());
 
   // Cyclus-samenvatting (zelfde logica als de tracker)
   const cycle = Gimme.load(Gimme.KEYS.cycle, { periodStarts: [] });

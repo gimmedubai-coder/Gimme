@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/styles.css?v=4">
+<link rel="stylesheet" href="assets/css/styles.css?v=5">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -23,7 +23,7 @@
     <a class="navlink" href="cycle-tracker.html">Cycle Tracker</a>
     <a class="navlink" href="saved.html">Saved</a>
     <a class="navlink active" href="shopping-list.html">Shopping List</a>
-    <a class="avatar" href="signup.html" title="Your profile">G</a>
+    <a class="avatar" href="dashboard.html#account" title="Your profile">G</a>
   </div>
 </nav>
 
@@ -43,9 +43,10 @@
   </div>
 </footer>
 
-<script src="assets/js/data.js?v=4"></script>
-<script src="assets/js/app.js?v=4"></script>
+<script src="assets/js/data.js?v=5"></script>
+<script src="assets/js/app.js?v=5"></script>
 <script>
+  Gimme.requireAuth();
   let list = Gimme.load(Gimme.KEYS.shopping, { groups: [], checked: {} });
   list.checked = list.checked || {};
 
