@@ -15,6 +15,7 @@ const RECIPES = [
       { name: 'Fresh ginger (grated)', qty: 5, unit: 'g' },
       { name: 'Honey or maple syrup', qty: 10, unit: 'ml' },
     ],
+    nutrition: { calories: 45, protein: 0, carbs: 11, fat: 0 },
     steps: [
       'Warm the water until comfortably hot, not boiling, boiling water kills the fresh, bright flavor of the lemon.',
       'Squeeze in the lemon juice and stir in the grated ginger.',
@@ -33,6 +34,7 @@ const RECIPES = [
       { name: 'Fresh ginger (sliced)', qty: 10, unit: 'g' },
       { name: 'Ice cubes', qty: 150, unit: 'g' },
     ],
+    nutrition: { calories: 25, protein: 0, carbs: 6, fat: 0 },
     steps: [
       'Lightly crush the mint leaves and ginger slices in the bottom of a jug to release their oils.',
       'Add the lime juice and ice cubes, then top up with sparkling water.',
@@ -50,6 +52,7 @@ const RECIPES = [
       { name: 'Fresh mint leaves', qty: 10, unit: 'g' },
       { name: 'Honey (optional)', qty: 10, unit: 'ml' },
     ],
+    nutrition: { calories: 20, protein: 0, carbs: 5, fat: 0 },
     steps: [
       'Bring the water to a gentle simmer with the ginger slices and let it steep for 4 minutes.',
       'Take the pot off the heat, add the mint leaves and cover for 2 more minutes.',
@@ -68,6 +71,7 @@ const RECIPES = [
       { name: 'Fresh ginger (grated)', qty: 8, unit: 'g' },
       { name: 'Mixed berries (topping)', qty: 100, unit: 'g' },
     ],
+    nutrition: { calories: 280, protein: 8, carbs: 50, fat: 5 },
     steps: [
       'Blend the frozen banana, oats, yogurt and grated ginger until completely smooth and thick.',
       'Divide between two bowls; the mixture should hold a spoon upright.',
@@ -87,6 +91,7 @@ const RECIPES = [
       { name: 'Fresh ginger (grated)', qty: 5, unit: 'g' },
       { name: 'Maple syrup', qty: 15, unit: 'ml' },
     ],
+    nutrition: { calories: 320, protein: 9, carbs: 52, fat: 8 },
     steps: [
       'Stir the oats, milk, chia seeds, grated ginger and maple syrup together in two jars.',
       'Cover and refrigerate overnight, or for at least 6 hours.',
@@ -106,6 +111,7 @@ const RECIPES = [
       { name: 'Sesame oil', qty: 15, unit: 'ml' },
       { name: 'Soy sauce', qty: 20, unit: 'ml' },
     ],
+    nutrition: { calories: 430, protein: 15, carbs: 55, fat: 15 },
     steps: [
       'Heat the sesame oil in a wok or large pan and fry the kimchi for 2 minutes until fragrant.',
       'Add the rice and soy sauce, breaking up any clumps, and stir-fry for 5 minutes until hot and slightly crispy.',
@@ -124,6 +130,7 @@ const RECIPES = [
       { name: 'Granola', qty: 60, unit: 'g' },
       { name: 'Honey', qty: 15, unit: 'ml' },
     ],
+    nutrition: { calories: 280, protein: 18, carbs: 35, fat: 6 },
     steps: [
       'Divide the yogurt between two bowls, swirling it with the back of a spoon.',
       'Spoon the berries over the top, letting a little juice run into the yogurt.',
@@ -142,6 +149,7 @@ const RECIPES = [
       { name: 'Lemon juice', qty: 10, unit: 'ml' },
       { name: 'Chili flakes', qty: 2, unit: 'g' },
     ],
+    nutrition: { calories: 320, protein: 8, carbs: 32, fat: 18 },
     steps: [
       'Toast the sourdough until deeply golden and sturdy enough to carry the toppings.',
       'Mash the avocado with the lemon juice and a pinch of salt, then spread thickly on the toast.',
@@ -159,6 +167,7 @@ const RECIPES = [
       { name: 'Ground flaxseed', qty: 20, unit: 'g' },
       { name: 'Honey (optional)', qty: 10, unit: 'ml' },
     ],
+    nutrition: { calories: 220, protein: 10, carbs: 25, fat: 8 },
     steps: [
       'Add the kefir, banana, flaxseed and honey to a blender.',
       'Blend for 30 seconds until completely smooth and slightly frothy.',
@@ -180,6 +189,7 @@ const RECIPES = [
       { name: 'Bay leaves', qty: 1, unit: 'g' },
       { name: 'Salt', qty: 10, unit: 'g' },
     ],
+    nutrition: { calories: 45, protein: 8, carbs: 1, fat: 1 },
     steps: [
       'Roast the bones at 200°C for 30 minutes until deeply browned; this is where the flavor comes from.',
       'Transfer to a large pot with the water and vinegar and leave for 30 minutes; the acid helps draw minerals from the bones.',
@@ -200,6 +210,7 @@ const RECIPES = [
       { name: 'Garlic cloves', qty: 20, unit: 'g' },
       { name: 'Salt', qty: 8, unit: 'g' },
     ],
+    nutrition: { calories: 40, protein: 6, carbs: 1, fat: 1 },
     steps: [
       'Cover the chicken with cold water, bring slowly to a simmer and skim off any foam.',
       'Add the ginger, turmeric and garlic and simmer gently for about 4 hours.',
@@ -219,6 +230,7 @@ const RECIPES = [
       { name: 'Soy sauce', qty: 20, unit: 'ml' },
       { name: 'Sesame oil', qty: 10, unit: 'ml' },
     ],
+    nutrition: { calories: 420, protein: 24, carbs: 45, fat: 14 },
     steps: [
       'Soft-boil the eggs for 6.5 minutes, plunge into cold water and peel carefully.',
       'Bring the broth to a simmer with the soy sauce and sesame oil.',
@@ -237,6 +249,7 @@ const RECIPES = [
       { name: 'Fresh ginger (grated)', qty: 5, unit: 'g' },
       { name: 'Black pepper', qty: 1, unit: 'g' },
     ],
+    nutrition: { calories: 90, protein: 9, carbs: 2, fat: 6 },
     steps: [
       'Heat the broth with the grated ginger until steaming but not boiling.',
       'Blend with the butter and a crack of black pepper for 20 seconds until frothy.',
@@ -256,6 +269,7 @@ const RECIPES = [
       { name: 'Soy sauce', qty: 20, unit: 'ml' },
       { name: 'Olive oil', qty: 10, unit: 'ml' },
     ],
+    nutrition: { calories: 380, protein: 32, carbs: 12, fat: 22 },
     steps: [
       'Heat the oven to 200°C and line a small baking tray with parchment.',
       'Whisk the lime, ginger, honey, soy sauce and olive oil into a glaze.',
@@ -273,6 +287,7 @@ const RECIPES = [
       { name: 'Water', qty: 300, unit: 'ml' },
       { name: 'Honey (optional)', qty: 10, unit: 'ml' },
     ],
+    nutrition: { calories: 10, protein: 0, carbs: 2, fat: 0 },
     steps: [
       'Pour freshly boiled water over the raspberry leaf in a teapot or mug.',
       'Steep covered for 5 minutes, covering keeps the delicate aroma in.',
@@ -292,6 +307,7 @@ const RECIPES = [
       { name: 'Black pepper', qty: 1, unit: 'g' },
       { name: 'Honey', qty: 15, unit: 'ml' },
     ],
+    nutrition: { calories: 130, protein: 5, carbs: 16, fat: 5 },
     steps: [
       'Warm the milk gently in a small pan with the turmeric, ginger, cinnamon and pepper.',
       'Whisk and simmer for 5 minutes, never let it boil over.',
@@ -310,6 +326,7 @@ const RECIPES = [
       { name: 'Vanilla extract', qty: 2, unit: 'ml' },
       { name: 'Sea salt', qty: 1, unit: 'g' },
     ],
+    nutrition: { calories: 210, protein: 6, carbs: 28, fat: 9 },
     steps: [
       'Whisk the cacao with a splash of the milk into a smooth paste; no lumps.',
       'Add the rest of the milk, the maple syrup, vanilla and a pinch of salt.',
@@ -327,6 +344,7 @@ const RECIPES = [
       { name: 'Fresh ginger', qty: 10, unit: 'g' },
       { name: 'Cold water', qty: 100, unit: 'ml' },
     ],
+    nutrition: { calories: 95, protein: 2, carbs: 22, fat: 0 },
     steps: [
       'Chop the beetroot and oranges roughly and add them to the blender with the ginger and water.',
       'Blend on high for a full minute until as smooth as possible.',
@@ -350,6 +368,7 @@ const RECIPES = [
       { name: 'Cherry tomatoes, halved', qty: 75, unit: 'g' },
       { name: 'Salt', qty: 2, unit: 'g' },
     ],
+    nutrition: { calories: 520, protein: 18, carbs: 55, fat: 26 },
     steps: [
       'Preheat the oven to 200°C. Toss chickpeas with olive oil, cumin, smoked paprika and a pinch of salt, then roast for 20 minutes until crisp.',
       'Whisk tahini with lemon juice and a splash of water until smooth and pourable; add water a little at a time.',
@@ -370,6 +389,7 @@ const RECIPES = [
       { name: 'Maple syrup', qty: 20, unit: 'ml' },
       { name: 'Mixed berries (topping)', qty: 100, unit: 'g' },
     ],
+    nutrition: { calories: 380, protein: 24, carbs: 42, fat: 12 },
     steps: [
       'Whisk the yogurt and eggs until smooth, then fold in the oat flour and baking powder.',
       'Rest the batter for 5 minutes; this is what makes them fluffy.',
@@ -391,6 +411,7 @@ const RECIPES = [
       { name: 'Olive oil', qty: 30, unit: 'ml' },
       { name: 'Lemon juice', qty: 25, unit: 'ml' },
     ],
+    nutrition: { calories: 290, protein: 14, carbs: 38, fat: 10 },
     steps: [
       'Let the lentils and quinoa cool to room temperature so the herbs stay fresh.',
       'Whisk the olive oil and lemon juice with a good pinch of salt into a dressing.',
@@ -410,6 +431,7 @@ const RECIPES = [
       { name: 'Vanilla extract', qty: 3, unit: 'ml' },
       { name: 'Mixed berries', qty: 150, unit: 'g' },
     ],
+    nutrition: { calories: 260, protein: 8, carbs: 30, fat: 11 },
     steps: [
       'Whisk the chia seeds, milk, maple syrup and vanilla together in a bowl or two jars.',
       'Rest for 10 minutes, whisk again to break up clumps, then refrigerate for at least 2 hours.',
