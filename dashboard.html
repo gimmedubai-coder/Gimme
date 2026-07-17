@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/styles.css?v=10">
+<link rel="stylesheet" href="assets/css/styles.css?v=11">
 <!-- Google Analytics (GA4): replace GA4_MEASUREMENT_ID below with your real ID from analytics.google.com -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=GA4_MEASUREMENT_ID"></script>
 <script>
@@ -89,45 +89,58 @@
   </div>
 </footer>
 
-<script src="assets/js/data.js?v=10"></script>
-<script src="assets/js/app.js?v=10"></script>
+<script src="assets/js/data.js?v=11"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/js/app.js?v=11"></script>
 <script>
-  Gimme.requireAuth();
-  const profile = Gimme.getProfile();
-  const now = new Date();
-  document.getElementById('dateLine').textContent =
-    now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
-  document.getElementById('greeting').textContent = profile && profile.name ? `Hi ${profile.name}` : 'Hi there';
-  document.getElementById('acctName').textContent = profile.name;
-  document.getElementById('acctEmail').textContent = profile.email;
-  document.getElementById('logoutBtn').addEventListener('click', () => Gimme.logout());
+  async function boot() {
+    let profile = Gimme.getProfile();
 
-  // Cyclus-samenvatting (zelfde logica als de tracker)
-  const cycle = Gimme.load(Gimme.KEYS.cycle, { periodStarts: [] });
-  if (cycle.periodStarts.length) {
-    const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    const last = cycle.periodStarts.map(s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); }).sort((a, b) => b - a)[0];
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    const cd = ((Math.round((today - last) / 86400000) % 28) + 28) % 28 + 1;
-    const phase = cd <= 5 ? 'Menstrual' : cd <= 13 ? 'Follicular' : cd === 14 ? 'Ovulation' : 'Luteal';
-    document.getElementById('cycleDay').textContent = `Day ${cd}`;
-    document.getElementById('cyclePhase').textContent = `${phase} phase`;
-  } else {
-    document.getElementById('cycleDay').textContent = 'Start tracking';
-    document.getElementById('cyclePhase').textContent = 'Log your first period start';
+    if (!profile) {
+      // Geen lokaal profiel: dit kan de terugkeer van een magic-link e-mail zijn.
+      // Probeer eerst de cloud-sessie op te halen voor we naar signup sturen.
+      const pulled = await Gimme.pullFromCloud();
+      if (pulled) { location.reload(); return; }
+      location.href = 'signup.html';
+      return;
+    }
+
+    const now = new Date();
+    document.getElementById('dateLine').textContent =
+      now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
+    document.getElementById('greeting').textContent = profile.name ? `Hi ${profile.name}` : 'Hi there';
+    document.getElementById('acctName').textContent = profile.name;
+    document.getElementById('acctEmail').textContent = profile.email;
+    document.getElementById('logoutBtn').addEventListener('click', () => Gimme.logout());
+
+    // Cyclus-samenvatting (zelfde logica als de tracker)
+    const cycle = Gimme.load(Gimme.KEYS.cycle, { periodStarts: [] });
+    if (cycle.periodStarts.length) {
+      const last = cycle.periodStarts.map(s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); }).sort((a, b) => b - a)[0];
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const cd = ((Math.round((today - last) / 86400000) % 28) + 28) % 28 + 1;
+      const phase = cd <= 5 ? 'Menstrual' : cd <= 13 ? 'Follicular' : cd === 14 ? 'Ovulation' : 'Luteal';
+      document.getElementById('cycleDay').textContent = `Day ${cd}`;
+      document.getElementById('cyclePhase').textContent = `${phase} phase`;
+    } else {
+      document.getElementById('cycleDay').textContent = 'Start tracking';
+      document.getElementById('cyclePhase').textContent = 'Log your first period start';
+    }
+
+    // Tellers
+    const saved = Gimme.getSaved();
+    document.getElementById('savedCount').textContent = Object.keys(saved.items).length;
+    const list = Gimme.load(Gimme.KEYS.shopping, { groups: [] });
+    document.getElementById('listCount').textContent = list.groups.length;
+
+    // Picks op basis van profielfocus (fallback: gut)
+    const focuses = profile.focuses && profile.focuses.length ? profile.focuses : ['gut', 'hormone', 'protein'];
+    const picks = RECIPES.filter(r => r.focuses.some(f => focuses.includes(f))).slice(0, 3);
+    document.getElementById('picksGrid').innerHTML = picks.map(r => Gimme.recipeCard(r)).join('');
+    Gimme.bindSaveButtons(document.getElementById('picksGrid'));
   }
 
-  // Tellers
-  const saved = Gimme.getSaved();
-  document.getElementById('savedCount').textContent = Object.keys(saved.items).length;
-  const list = Gimme.load(Gimme.KEYS.shopping, { groups: [] });
-  document.getElementById('listCount').textContent = list.groups.length;
-
-  // Picks op basis van profielfocus (fallback: gut)
-  const focuses = profile && profile.focuses && profile.focuses.length ? profile.focuses : ['gut', 'hormone', 'protein'];
-  const picks = RECIPES.filter(r => r.focuses.some(f => focuses.includes(f))).slice(0, 3);
-  document.getElementById('picksGrid').innerHTML = picks.map(r => Gimme.recipeCard(r)).join('');
-  Gimme.bindSaveButtons(document.getElementById('picksGrid'));
+  boot();
 </script>
 </body>
 </html>

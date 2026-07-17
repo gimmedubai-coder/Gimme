@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/styles.css?v=10">
+<link rel="stylesheet" href="assets/css/styles.css?v=11">
 <!-- Google Analytics (GA4): replace GA4_MEASUREMENT_ID below with your real ID from analytics.google.com -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=GA4_MEASUREMENT_ID"></script>
 <script>
@@ -61,8 +61,9 @@
   </div>
 </main>
 
-<script src="assets/js/data.js?v=10"></script>
-<script src="assets/js/app.js?v=10"></script>
+<script src="assets/js/data.js?v=11"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/js/app.js?v=11"></script>
 <script>
   const FOCUS_OPTS = [
     ['gut', '🥬', 'Gut Health', 'Digestion, bloating, fermented foods'],
@@ -142,7 +143,17 @@
     }
   }
 
-  document.getElementById('wizard').addEventListener('submit', (e) => {
+  function showCheckEmail(email) {
+    document.querySelector('.auth-panel').innerHTML = `
+      <p class="eyebrow">CHECK YOUR EMAIL</p>
+      <h1 class="h2" style="margin-bottom:14px">We sent you a magic link</h1>
+      <p class="body-txt" style="opacity:.7;margin-bottom:8px">
+        Open the email we just sent to <strong>${email}</strong> and click the link to finish signing in.
+      </p>
+      <p class="form-note" style="margin-top:20px">No password needed. That's the only email this step sends.</p>`;
+  }
+
+  document.getElementById('wizard').addEventListener('submit', async (e) => {
     e.preventDefault();
     if (step === 1) {
       const name = document.getElementById('fName').value.trim();
@@ -155,14 +166,19 @@
       if (!data.focuses.size) { Gimme.toast('Pick at least one focus'); return; }
       step = 3; renderStep();
     } else {
-      Gimme.setProfile({
-        name: data.name, email: data.email,
-        focuses: [...data.focuses], tracking: [...data.tracking],
-        createdAt: new Date().toISOString(),
+      nextBtn.disabled = true;
+      nextBtn.textContent = 'Sending...';
+      const { error } = await Gimme.signInWithEmail(data.email, {
+        name: data.name, focuses: [...data.focuses], tracking: [...data.tracking],
       });
-      Gimme.trackEvent('sign_up', { method: 'wizard' });
-      Gimme.toast(`Welcome, ${data.name}!`);
-      setTimeout(() => location.href = 'dashboard.html', 600);
+      if (error) {
+        Gimme.toast(error.message || 'Something went wrong, please try again');
+        nextBtn.disabled = false;
+        nextBtn.textContent = 'Start cooking';
+        return;
+      }
+      Gimme.trackEvent('sign_up', { method: 'magic_link' });
+      showCheckEmail(data.email);
     }
   });
 
