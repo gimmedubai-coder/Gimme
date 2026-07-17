@@ -9,7 +9,15 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/styles.css?v=8">
+<link rel="stylesheet" href="assets/css/styles.css?v=9">
+<!-- Google Analytics (GA4): replace GA4_MEASUREMENT_ID below with your real ID from analytics.google.com -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=GA4_MEASUREMENT_ID"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'GA4_MEASUREMENT_ID');
+</script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -45,8 +53,8 @@
   </div>
 </footer>
 
-<script src="assets/js/data.js?v=8"></script>
-<script src="assets/js/app.js?v=8"></script>
+<script src="assets/js/data.js?v=9"></script>
+<script src="assets/js/app.js?v=9"></script>
 <script>
   const id = Number(new URLSearchParams(location.search).get('id')) || 19;
   const r = Gimme.recipeById(id);
@@ -61,6 +69,35 @@
       </div>`;
   } else {
     document.title = `${r.title} | Gimme`;
+    const BASE = 'https://gimmedubai-coder.github.io/Gimme/';
+    const canonicalUrl = BASE + 'recipe.html?id=' + r.id;
+    const imageUrl = BASE + r.img;
+    Gimme.setPageMeta({
+      title: `${r.title} | Gimme`,
+      description: r.excerpt,
+      image: imageUrl,
+      canonical: canonicalUrl,
+      jsonLd: {
+        '@context': 'https://schema.org',
+        '@type': 'Recipe',
+        name: r.title,
+        description: r.excerpt,
+        image: [imageUrl],
+        recipeYield: `${r.serves} serving${r.serves > 1 ? 's' : ''}`,
+        totalTime: Gimme.toISODuration(r.time),
+        recipeIngredient: r.ingredients.map(i => `${i.qty} ${i.unit} ${i.name}`),
+        recipeInstructions: r.steps.map(s => ({ '@type': 'HowToStep', text: s })),
+        nutrition: r.nutrition ? {
+          '@type': 'NutritionInformation',
+          calories: `${r.nutrition.calories} calories`,
+          proteinContent: `${r.nutrition.protein} g`,
+          carbohydrateContent: `${r.nutrition.carbs} g`,
+          fatContent: `${r.nutrition.fat} g`,
+        } : undefined,
+        keywords: r.tags.join(', '),
+        author: { '@type': 'Organization', name: 'Gimme' },
+      },
+    });
     let servings = r.serves;
 
     const fmt = (qty, unit) => {
@@ -90,7 +127,7 @@
         <div class="recipe-grid">
           <div>
             <div style="position:relative">
-              <img src="${r.img}" alt="Gimmi_${r.title}" style="border-radius:18px;width:100%;aspect-ratio:4/3;object-fit:cover">
+              <img src="${r.img}" alt="${r.title}" style="border-radius:18px;width:100%;aspect-ratio:4/3;object-fit:cover">
               <button class="save-btn ${saved ? 'saved' : ''}" data-save-key="${key}" aria-label="Save this recipe" aria-pressed="${saved}" style="width:44px;height:44px;top:16px;right:16px">
                 <span class="save-shape" style="width:14px;height:17px"></span>
               </button>

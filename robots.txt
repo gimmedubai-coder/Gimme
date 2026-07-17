@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://USERNAME.github.io/gimme/sitemap.xml
+Sitemap: https://gimmedubai-coder.github.io/Gimme/sitemap.xml

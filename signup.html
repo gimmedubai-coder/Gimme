@@ -6,10 +6,19 @@
 <title>Sign Up | Gimme</title>
 <meta name="description" content="Create your free Gimme account, save recipes, track your cycle and build your weekly menu.">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="canonical" href="https://gimmedubai-coder.github.io/Gimme/signup.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/styles.css?v=8">
+<link rel="stylesheet" href="assets/css/styles.css?v=9">
+<!-- Google Analytics (GA4): replace GA4_MEASUREMENT_ID below with your real ID from analytics.google.com -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=GA4_MEASUREMENT_ID"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'GA4_MEASUREMENT_ID');
+</script>
 </head>
 <body>
 
@@ -43,17 +52,17 @@
         </div>
       </form>
       <p class="form-note" style="margin-top:20px">
-        Your details are stored locally in your browser only; no account is created on a server yet.
+        Free forever. Takes about a minute, and unlocks your saved recipes, shopping list and cycle tracker.
       </p>
     </div>
   </div>
   <div>
-    <img class="auth-img" src="assets/img/signup-side.jpg" alt="Gimmi_Cooking in a bright kitchen">
+    <img class="auth-img" src="assets/img/signup-side.jpg" alt="Cooking in a bright kitchen">
   </div>
 </main>
 
-<script src="assets/js/data.js?v=8"></script>
-<script src="assets/js/app.js?v=8"></script>
+<script src="assets/js/data.js?v=9"></script>
+<script src="assets/js/app.js?v=9"></script>
 <script>
   const FOCUS_OPTS = [
     ['gut', '🥬', 'Gut Health', 'Digestion, bloating, fermented foods'],
@@ -151,6 +160,7 @@
         focuses: [...data.focuses], tracking: [...data.tracking],
         createdAt: new Date().toISOString(),
       });
+      Gimme.trackEvent('sign_up', { method: 'wizard' });
       Gimme.toast(`Welcome, ${data.name}!`);
       setTimeout(() => location.href = 'dashboard.html', 600);
     }

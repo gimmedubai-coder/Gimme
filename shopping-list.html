@@ -6,10 +6,19 @@
 <title>Shopping List | Gimme</title>
 <meta name="description" content="Your Gimme shopping list, ingredients automatically added up across recipes.">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/styles.css?v=8">
+<link rel="stylesheet" href="assets/css/styles.css?v=9">
+<!-- Google Analytics (GA4): replace GA4_MEASUREMENT_ID below with your real ID from analytics.google.com -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=GA4_MEASUREMENT_ID"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'GA4_MEASUREMENT_ID');
+</script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -43,8 +52,8 @@
   </div>
 </footer>
 
-<script src="assets/js/data.js?v=8"></script>
-<script src="assets/js/app.js?v=8"></script>
+<script src="assets/js/data.js?v=9"></script>
+<script src="assets/js/app.js?v=9"></script>
 <script>
   Gimme.requireAuth();
   let list = Gimme.load(Gimme.KEYS.shopping, { groups: [], checked: {} });
@@ -92,7 +101,7 @@
             if (!r) return '';
             return `
               <div class="panel" style="margin-bottom:14px;padding:16px;display:flex;gap:14px;align-items:center">
-                <img src="${r.img}" alt="Gimmi_${r.title}" style="width:64px;height:64px;border-radius:12px;object-fit:cover;flex-shrink:0">
+                <img src="${r.img}" alt="${r.title}" style="width:64px;height:64px;border-radius:12px;object-fit:cover;flex-shrink:0">
                 <div style="flex:1;min-width:0">
                   <a href="recipe.html?id=${r.id}" style="text-decoration:none;color:inherit;font:700 15px var(--font-head)">${r.title}</a>
                   <div class="stepper" style="margin-top:8px">

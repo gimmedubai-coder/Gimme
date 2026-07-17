@@ -6,10 +6,19 @@
 <title>Journal | Gimme</title>
 <meta name="description" content="Honest, no-hype articles about gut health, hormones, protein and feeling good.">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="canonical" href="https://gimmedubai-coder.github.io/Gimme/journal.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/styles.css?v=8">
+<link rel="stylesheet" href="assets/css/styles.css?v=9">
+<!-- Google Analytics (GA4): replace GA4_MEASUREMENT_ID below with your real ID from analytics.google.com -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=GA4_MEASUREMENT_ID"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'GA4_MEASUREMENT_ID');
+</script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -50,8 +59,8 @@
   </div>
 </footer>
 
-<script src="assets/js/data.js?v=8"></script>
-<script src="assets/js/app.js?v=8"></script>
+<script src="assets/js/data.js?v=9"></script>
+<script src="assets/js/app.js?v=9"></script>
 <script>
   const CATS = [['all', 'All'], ['gut', 'Gut Health'], ['hormone', 'Hormone Balance'], ['protein', 'High Protein'], ['lifestyle', 'Lifestyle']];
   let activeCat = new URLSearchParams(location.search).get('cat') || 'all';
@@ -59,7 +68,7 @@
   const featured = ARTICLES.find(a => a.slug === 'feeling-good-meaning');
   document.getElementById('featuredCard').href = 'article.html?slug=' + featured.slug;
   document.getElementById('featuredCard').innerHTML = `
-    <img src="assets/img/about-team.jpg" alt="Gimmi_Samy and Renske cooking together" loading="lazy">
+    <img src="assets/img/about-team.jpg" alt="Samy and Renske cooking together" loading="lazy">
     <div class="featured-body">
       <div class="card-row" style="justify-content:flex-start;gap:10px">
         <span class="pill tag neutral">FEATURED</span>

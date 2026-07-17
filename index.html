@@ -10,10 +10,19 @@
 <meta property="og:type" content="website">
 <meta property="og:image" content="assets/img/hero.jpg">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="canonical" href="https://gimmedubai-coder.github.io/Gimme/index.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/styles.css?v=8">
+<link rel="stylesheet" href="assets/css/styles.css?v=9">
+<!-- Google Analytics (GA4): replace GA4_MEASUREMENT_ID below with your real ID from analytics.google.com -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=GA4_MEASUREMENT_ID"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'GA4_MEASUREMENT_ID');
+</script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -50,7 +59,7 @@
       </div>
     </div>
     <div>
-      <img class="hero-img" src="assets/img/hero.jpg" alt="Gimmi_Nourishing grain bowl" fetchpriority="high">
+      <img class="hero-img" src="assets/img/hero.jpg" alt="Nourishing grain bowl" fetchpriority="high">
     </div>
   </section>
 
@@ -137,7 +146,7 @@
         </form>
         <p class="small" style="opacity:.45;margin-top:14px">We store your address locally for now, hook up your email provider later.</p>
       </div>
-      <img src="assets/img/overnight-oats.jpg" alt="Gimmi_Overnight Oats with Orange and Ginger" loading="lazy">
+      <img src="assets/img/overnight-oats.jpg" alt="Overnight Oats with Orange and Ginger" loading="lazy">
     </div>
   </section>
 </main>
@@ -175,8 +184,8 @@
   </div>
 </footer>
 
-<script src="assets/js/data.js?v=8"></script>
-<script src="assets/js/app.js?v=8"></script>
+<script src="assets/js/data.js?v=9"></script>
+<script src="assets/js/app.js?v=9"></script>
 <script>
   // --- Weekmenu ---
   const tabsEl = document.getElementById('dayTabs');
@@ -195,7 +204,7 @@
     const { day, recipeId } = WEEK_MENU[activeDay];
     const r = Gimme.recipeById(recipeId);
     detailEl.innerHTML = `
-      <img src="${r.img}" alt="Gimmi_${r.title}">
+      <img src="${r.img}" alt="${r.title}">
       <div class="week-detail-body">
         <div class="card-row">
           <span class="pill tag ${Gimme.focusClass(r)}">${Gimme.focusLabel(r)}</span>
@@ -237,7 +246,7 @@
   ];
   document.getElementById('followGrid').innerHTML = tiles.map(([img, label, id]) => `
     <a class="follow-tile" href="recipe.html?id=${id}">
-      <img src="assets/img/${img}.jpg" alt="Gimmi_${Gimme.recipeById(id).title}" loading="lazy">
+      <img src="assets/img/${img}.jpg" alt="${Gimme.recipeById(id).title}" loading="lazy">
       <span class="tag-overlay">${label}</span>
     </a>`).join('');
 </script>

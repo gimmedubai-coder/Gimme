@@ -9,7 +9,15 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/styles.css?v=8">
+<link rel="stylesheet" href="assets/css/styles.css?v=9">
+<!-- Google Analytics (GA4): replace GA4_MEASUREMENT_ID below with your real ID from analytics.google.com -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=GA4_MEASUREMENT_ID"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'GA4_MEASUREMENT_ID');
+</script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -45,8 +53,8 @@
   </div>
 </footer>
 
-<script src="assets/js/data.js?v=8"></script>
-<script src="assets/js/app.js?v=8"></script>
+<script src="assets/js/data.js?v=9"></script>
+<script src="assets/js/app.js?v=9"></script>
 <script>
   const slug = new URLSearchParams(location.search).get('slug');
   const a = ARTICLES.find(x => x.slug === slug);
@@ -61,6 +69,22 @@
       </div>`;
   } else {
     document.title = `${a.title} | Gimme`;
+    const BASE = 'https://gimmedubai-coder.github.io/Gimme/';
+    Gimme.setPageMeta({
+      title: `${a.title} | Gimme`,
+      description: a.excerpt,
+      image: BASE + 'assets/img/hero.jpg',
+      canonical: BASE + 'article.html?slug=' + a.slug,
+      jsonLd: {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: a.title,
+        description: a.excerpt,
+        articleSection: a.category,
+        author: { '@type': 'Organization', name: 'Gimme' },
+        publisher: { '@type': 'Organization', name: 'Gimme' },
+      },
+    });
     const key = 'article:' + a.slug;
     const saved = Gimme.isSaved(key);
     root.innerHTML = `
