@@ -80,14 +80,43 @@ const Gimme = (() => {
     if (!isLoggedIn()) { location.href = 'signup.html'; }
   }
 
-  /* ---------- Nav: Sign Up -> Dashboard als je al bent ingelogd ---------- */
+  /* ---------- Nav: account-menu (Sign Up, of avatar-dropdown als je bent ingelogd) ---------- */
   function initAuthNav() {
-    const btn = document.getElementById('navAuthBtn');
-    if (!btn) return;
-    if (isLoggedIn()) {
-      btn.textContent = 'Dashboard';
-      btn.href = 'dashboard.html';
+    const slot = document.getElementById('acctMenu');
+    if (!slot) return;
+    const profile = getProfile();
+
+    if (!profile) {
+      slot.innerHTML = `<a class="btn btn-sm" href="signup.html">Sign Up</a>`;
+      return;
     }
+
+    const initial = profile.name ? profile.name.trim()[0].toUpperCase() : 'G';
+    slot.innerHTML = `
+      <button type="button" class="avatar" id="acctToggle" aria-haspopup="true" aria-expanded="false" title="Your account">${initial}</button>
+      <div class="acct-pop" id="acctPop" hidden>
+        <a class="dd-opt" href="dashboard.html">Dashboard</a>
+        <a class="dd-opt" href="saved.html">Saved</a>
+        <a class="dd-opt" href="shopping-list.html">Shopping List</a>
+        <a class="dd-opt" href="cycle-tracker.html">Cycle Tracker</a>
+        <hr>
+        <button type="button" class="dd-opt" id="acctLogout">Log out</button>
+      </div>`;
+
+    const toggle = slot.querySelector('#acctToggle');
+    const pop = slot.querySelector('#acctPop');
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      pop.hidden = !pop.hidden;
+      toggle.setAttribute('aria-expanded', String(!pop.hidden));
+    });
+    slot.querySelector('#acctLogout').addEventListener('click', () => logout());
+    document.addEventListener('click', (e) => {
+      if (!pop.hidden && !slot.contains(e.target)) {
+        pop.hidden = true;
+        toggle.setAttribute('aria-expanded', 'false');
+      }
+    });
   }
 
   /* ---------- Toast ---------- */
