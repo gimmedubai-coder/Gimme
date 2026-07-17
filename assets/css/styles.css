@@ -219,15 +219,8 @@ a.card:hover, .card.hover:hover { transform: translateY(-5px); box-shadow: var(-
   border: none; transition: transform 0.15s;
 }
 .save-btn:hover { transform: scale(1.08); }
-.save-shape { width: 12px; height: 15px; clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%); background: oklch(0.75 0.02 40); }
-.save-btn.saved .save-shape { background: var(--accent); }
-.save-pop {
-  margin-top: 10px; background: oklch(0.97 0.01 65); border-radius: 14px;
-  border: 1px solid var(--line-dark); padding: 12px; display: flex; flex-direction: column; gap: 4px;
-}
-.save-new { display: flex; gap: 6px; margin-top: 6px; padding-top: 8px; border-top: 1px solid oklch(0.92 0.015 60); }
-.save-new input { flex: 1; min-width: 0; padding: 8px 10px; border-radius: 8px; border: 1.5px solid oklch(0.86 0.02 60); font: 13px var(--font-body); }
-.save-new button { font: 700 12px var(--font-head); color: var(--accent); cursor: pointer; background: none; border: none; white-space: nowrap; }
+.save-shape { width: 16px; height: 16px; fill: none; stroke: oklch(0.75 0.02 40); stroke-width: 2px; transition: fill 0.15s, stroke 0.15s; }
+.save-btn.saved .save-shape { fill: var(--accent); stroke: var(--accent); }
 
 /* ---------- Account-menu (nav) ---------- */
 .acct-menu { position: relative; display: flex; align-items: center; gap: 14px; }
