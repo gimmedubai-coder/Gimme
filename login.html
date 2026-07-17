@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Log In | Gimme</title>
+<meta name="description" content="Log in to your Gimme account with a magic link or your Google account.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="canonical" href="https://gimmedubai-coder.github.io/Gimme/login.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css?v=13">
+<!-- Google Analytics (GA4): replace GA4_MEASUREMENT_ID below with your real ID from analytics.google.com -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=GA4_MEASUREMENT_ID"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'GA4_MEASUREMENT_ID');
+</script>
+</head>
+<body>
+
+<nav class="nav" aria-label="Main navigation">
+  <a class="logo" href="index.html">gimme</a>
+  <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <div class="nav-links">
+    <a class="navlink" href="recipes.html">Recipes</a>
+    <a class="navlink" href="gut-health.html">Gut Health</a>
+    <a class="navlink" href="hormone-balance.html">Hormone Balance</a>
+    <a class="navlink" href="high-protein.html">High Protein</a>
+    <a class="navlink" href="journal.html">Journal</a>
+    <a class="navlink" href="about.html">About Us</a>
+  </div>
+</nav>
+
+<main class="auth-grid">
+  <div style="display:flex">
+    <div class="auth-panel">
+      <p class="eyebrow">LOG IN</p>
+      <h1 class="h2" style="margin-bottom:22px">Welcome back</h1>
+
+      <button type="button" class="btn btn-ghost" id="googleBtn" style="width:100%">Continue with Google</button>
+
+      <div style="display:flex;align-items:center;gap:12px;margin:20px 0">
+        <hr style="flex:1;border:none;border-top:1px solid var(--line-dark)">
+        <span class="form-note">or</span>
+        <hr style="flex:1;border:none;border-top:1px solid var(--line-dark)">
+      </div>
+
+      <form id="loginForm" novalidate>
+        <div class="form-row">
+          <label class="label" for="fEmail">Email address</label>
+          <input class="field" id="fEmail" type="email" placeholder="you@example.com" autocomplete="email">
+        </div>
+        <button type="submit" class="btn" id="submitBtn" style="width:100%;margin-top:18px">Send magic link</button>
+      </form>
+
+      <p class="form-note" style="margin-top:20px">
+        New here? <a href="signup.html">Create an account</a>
+      </p>
+    </div>
+  </div>
+  <div>
+    <img class="auth-img" src="assets/img/signup-side.jpg" alt="Cooking in a bright kitchen">
+  </div>
+</main>
+
+<script src="assets/js/data.js?v=13"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/js/app.js?v=13"></script>
+<script>
+  if (Gimme.getProfile()) { location.href = 'dashboard.html'; }
+
+  const googleBtn = document.getElementById('googleBtn');
+  googleBtn.addEventListener('click', async () => {
+    googleBtn.disabled = true;
+    const { error } = await Gimme.signInWithGoogle();
+    if (error) {
+      Gimme.toast(error.message || 'Something went wrong, please try again');
+      googleBtn.disabled = false;
+    }
+    // Bij succes stuurt Supabase de browser meteen naar Google, geen verdere code nodig.
+  });
+
+  const submitBtn = document.getElementById('submitBtn');
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('fEmail').value.trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { Gimme.toast('Please enter a valid email address'); return; }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending...';
+    const { error } = await Gimme.signInWithEmail(email, {});
+    if (error) {
+      Gimme.toast(error.message || 'Something went wrong, please try again');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Send magic link';
+      return;
+    }
+    Gimme.trackEvent('login_magic_link_sent');
+    document.querySelector('.auth-panel').innerHTML = `
+      <p class="eyebrow">CHECK YOUR EMAIL</p>
+      <h1 class="h2" style="margin-bottom:14px">We sent you a magic link</h1>
+      <p class="body-txt" style="opacity:.7;margin-bottom:8px">
+        Open the email we just sent to <strong>${email}</strong> and click the link to log in.
+      </p>
+      <p class="form-note" style="margin-top:20px">No password needed.</p>`;
+  });
+</script>
+</body>
+</html>

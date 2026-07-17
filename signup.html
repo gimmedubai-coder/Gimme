@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/styles.css?v=12">
+<link rel="stylesheet" href="assets/css/styles.css?v=13">
 <!-- Google Analytics (GA4): replace GA4_MEASUREMENT_ID below with your real ID from analytics.google.com -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=GA4_MEASUREMENT_ID"></script>
 <script>
@@ -44,6 +44,15 @@
         <span class="step-dot active"></span><span class="step-dot"></span><span class="step-dot"></span>
       </div>
 
+      <div id="googleBlock" style="margin-bottom:18px">
+        <button type="button" class="btn btn-ghost" id="googleBtn" style="width:100%">Continue with Google</button>
+        <div style="display:flex;align-items:center;gap:12px;margin:18px 0">
+          <hr style="flex:1;border:none;border-top:1px solid var(--line-dark)">
+          <span class="form-note">or</span>
+          <hr style="flex:1;border:none;border-top:1px solid var(--line-dark)">
+        </div>
+      </div>
+
       <form id="wizard" novalidate>
         <div id="stepBody"></div>
         <div style="display:flex;gap:12px;margin-top:26px">
@@ -61,9 +70,9 @@
   </div>
 </main>
 
-<script src="assets/js/data.js?v=12"></script>
+<script src="assets/js/data.js?v=13"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="assets/js/app.js?v=12"></script>
+<script src="assets/js/app.js?v=13"></script>
 <script>
   const FOCUS_OPTS = [
     ['gut', '🥬', 'Gut Health', 'Digestion, bloating, fermented foods'],
@@ -93,6 +102,7 @@
     document.querySelectorAll('.step-dot').forEach((d, i) => d.classList.toggle('active', i < step));
     backBtn.hidden = step === 1;
     nextBtn.textContent = step === 3 ? 'Start cooking' : 'Continue';
+    document.getElementById('googleBlock').hidden = step !== 1;
 
     if (step === 1) {
       stepTitle.textContent = 'Create your account';
@@ -183,6 +193,17 @@
   });
 
   backBtn.addEventListener('click', () => { if (step > 1) { step--; renderStep(); } });
+
+  const googleBtn = document.getElementById('googleBtn');
+  googleBtn.addEventListener('click', async () => {
+    googleBtn.disabled = true;
+    const { error } = await Gimme.signInWithGoogle();
+    if (error) {
+      Gimme.toast(error.message || 'Something went wrong, please try again');
+      googleBtn.disabled = false;
+    }
+    Gimme.trackEvent('sign_up', { method: 'google' });
+  });
 
   // Bestaand profiel? Vul stap 1 vooraf in.
   const existing = Gimme.getProfile();
