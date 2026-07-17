@@ -68,6 +68,27 @@ const Gimme = (() => {
   /* ---------- Profiel (signup) ---------- */
   function getProfile() { return load(KEYS.profile, null); }
   function setProfile(p) { save(KEYS.profile, p); }
+  function isLoggedIn() { return !!getProfile(); }
+
+  function logout() {
+    localStorage.removeItem(KEYS.profile);
+    location.href = 'index.html';
+  }
+
+  /* ---------- Auth-gate voor app-pagina's ---------- */
+  function requireAuth() {
+    if (!isLoggedIn()) { location.href = 'signup.html'; }
+  }
+
+  /* ---------- Nav: Sign Up -> Dashboard als je al bent ingelogd ---------- */
+  function initAuthNav() {
+    const btn = document.getElementById('navAuthBtn');
+    if (!btn) return;
+    if (isLoggedIn()) {
+      btn.textContent = 'Dashboard';
+      btn.href = 'dashboard.html';
+    }
+  }
 
   /* ---------- Toast ---------- */
   function toast(msg) {
@@ -234,12 +255,13 @@ const Gimme = (() => {
     initNewsletter();
     initAvatars();
     bindSaveButtons();
+    initAuthNav();
   });
 
   return {
     KEYS, load, save, toast,
     getSaved, isSaved, foldersFor, toggleSaved, createFolder,
-    getProfile, setProfile,
+    getProfile, setProfile, isLoggedIn, logout, requireAuth,
     recipeById, recipeCard, focusLabel, focusClass, tagLabel, bindSaveButtons,
   };
 })();
