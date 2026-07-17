@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/styles.css?v=13">
+<link rel="stylesheet" href="assets/css/styles.css?v=14">
 <!-- Google Analytics (GA4): replace GA4_MEASUREMENT_ID below with your real ID from analytics.google.com -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=GA4_MEASUREMENT_ID"></script>
 <script>
@@ -52,13 +52,12 @@
   </div>
 </footer>
 
-<script src="assets/js/data.js?v=13"></script>
+<script src="assets/js/data.js?v=14"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="assets/js/app.js?v=13"></script>
+<script src="assets/js/app.js?v=14"></script>
 <script>
   Gimme.requireAuth();
-  let list = Gimme.load(Gimme.KEYS.shopping, { groups: [], checked: {} });
-  list.checked = list.checked || {};
+  let list = { groups: [], checked: {} };
 
   const fmtQty = (qty, unit) => {
     const val = qty >= 100 ? Math.round(qty) : Math.round(qty * 10) / 10;
@@ -141,15 +140,17 @@
 
     root.querySelectorAll('[data-dec]').forEach(b => b.addEventListener('click', () => {
       const g = list.groups.find(x => x.recipeId === Number(b.dataset.dec));
-      if (g && g.servings > 1) { g.servings--; persist(); render(); }
+      if (g && g.servings > 1) { g.servings--; persist(); render(); Gimme.pushShoppingGroupUpsert(g.recipeId, g.servings); }
     }));
     root.querySelectorAll('[data-inc]').forEach(b => b.addEventListener('click', () => {
       const g = list.groups.find(x => x.recipeId === Number(b.dataset.inc));
-      if (g && g.servings < 12) { g.servings++; persist(); render(); }
+      if (g && g.servings < 12) { g.servings++; persist(); render(); Gimme.pushShoppingGroupUpsert(g.recipeId, g.servings); }
     }));
     root.querySelectorAll('[data-remove]').forEach(b => b.addEventListener('click', () => {
-      list.groups = list.groups.filter(x => x.recipeId !== Number(b.dataset.remove));
+      const removedId = Number(b.dataset.remove);
+      list.groups = list.groups.filter(x => x.recipeId !== removedId);
       persist(); render();
+      Gimme.pushShoppingGroupRemove(removedId);
       Gimme.toast('Recipe removed from your list');
     }));
     root.querySelectorAll('[data-check]').forEach(b => b.addEventListener('click', () => {
@@ -157,16 +158,24 @@
       list.checked[k] = !list.checked[k];
       if (!list.checked[k]) delete list.checked[k];
       persist(); render();
+      Gimme.pushShoppingChecked(k, !!list.checked[k]);
     }));
-    root.querySelector('#clearChecked').addEventListener('click', () => { list.checked = {}; persist(); render(); });
+    root.querySelector('#clearChecked').addEventListener('click', () => {
+      list.checked = {}; persist(); render(); Gimme.pushShoppingClearChecked();
+    });
     root.querySelector('#clearAll').addEventListener('click', () => {
       if (confirm('Remove all recipes and items from your shopping list?')) {
-        list = { groups: [], checked: {} }; persist(); render();
+        list = { groups: [], checked: {} }; persist(); render(); Gimme.pushShoppingClearAll();
       }
     });
   }
 
-  render();
+  (async () => {
+    await Gimme.pullShoppingFromCloud();
+    list = Gimme.load(Gimme.KEYS.shopping, { groups: [], checked: {} });
+    list.checked = list.checked || {};
+    render();
+  })();
 </script>
 </body>
 </html>

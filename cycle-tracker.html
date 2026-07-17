@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/styles.css?v=13">
+<link rel="stylesheet" href="assets/css/styles.css?v=14">
 <!-- Google Analytics (GA4): replace GA4_MEASUREMENT_ID below with your real ID from analytics.google.com -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=GA4_MEASUREMENT_ID"></script>
 <script>
@@ -88,9 +88,9 @@
   </div>
 </footer>
 
-<script src="assets/js/data.js?v=13"></script>
+<script src="assets/js/data.js?v=14"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="assets/js/app.js?v=13"></script>
+<script src="assets/js/app.js?v=14"></script>
 <script>
   Gimme.requireAuth();
   const CYCLE_LEN = 28, PERIOD_LEN = 5;
@@ -107,12 +107,7 @@
   const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
   const today = new Date(); today.setHours(0, 0, 0, 0);
 
-  let store = Gimme.load(Gimme.KEYS.cycle, { periodStarts: [], symptoms: {} });
-  if (!store.periodStarts.length) {
-    // Zachte start: een voorbeeld-start 9 dagen geleden, zodat de tracker direct iets toont
-    store.periodStarts = [iso(addDays(today, -9))];
-    Gimme.save(Gimme.KEYS.cycle, store);
-  }
+  let store = { periodStarts: [], symptoms: {} };
 
   let viewDate = new Date(today.getFullYear(), today.getMonth(), 1);
   let selectedDay = iso(today);
@@ -197,6 +192,7 @@
         store.symptoms[selectedDay] = arr.includes(s) ? arr.filter(x => x !== s) : [...arr, s];
         if (!store.symptoms[selectedDay].length) delete store.symptoms[selectedDay];
         Gimme.save(Gimme.KEYS.cycle, store);
+        Gimme.pushCycleSymptoms(selectedDay, store.symptoms[selectedDay] || []);
         renderDayEditor(); renderCalendar();
       }));
 
@@ -208,6 +204,7 @@
         ? store.periodStarts.filter(s => s !== selectedDay)
         : [...store.periodStarts, selectedDay].sort();
       Gimme.save(Gimme.KEYS.cycle, store);
+      Gimme.pushCyclePeriod(selectedDay, !isStart);
       renderAll();
     };
   }
@@ -249,7 +246,18 @@
   document.getElementById('nextMonth').addEventListener('click', () => { viewDate.setMonth(viewDate.getMonth() + 1); renderCalendar(); });
   document.getElementById('todayBtn').addEventListener('click', () => { viewDate = new Date(today.getFullYear(), today.getMonth(), 1); selectedDay = iso(today); renderAll(); });
 
-  renderAll();
+  (async () => {
+    await Gimme.pullCycleFromCloud();
+    store = Gimme.load(Gimme.KEYS.cycle, { periodStarts: [], symptoms: {} });
+    if (!store.periodStarts.length) {
+      // Zachte start: een voorbeeld-start 9 dagen geleden, zodat de tracker direct iets toont
+      const seedDate = iso(addDays(today, -9));
+      store.periodStarts = [seedDate];
+      Gimme.save(Gimme.KEYS.cycle, store);
+      Gimme.pushCyclePeriod(seedDate, true);
+    }
+    renderAll();
+  })();
 </script>
 </body>
 </html>
