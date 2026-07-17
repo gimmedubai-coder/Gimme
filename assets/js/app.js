@@ -86,44 +86,30 @@ const Gimme = (() => {
     const session = await getCloudSession();
     if (!session) return false;
     try {
-      const [{ data: folderRows }, { data: itemRows }] = await Promise.all([
-        sb.from('folders').select('*').eq('user_id', session.user.id),
-        sb.from('saved_items').select('*').eq('user_id', session.user.id),
-      ]);
-      const folders = (folderRows || []).map(f => ({ id: f.id, name: f.name }));
+      const { data: itemRows } = await sb.from('saved_items').select('*').eq('user_id', session.user.id);
       const items = {};
-      (itemRows || []).forEach(r => {
-        if (!r.folder_id) return;
-        items[r.item_key] = items[r.item_key] || [];
-        items[r.item_key].push(r.folder_id);
-      });
-      save(KEYS.saved, { folders, items });
+      (itemRows || []).forEach(r => { items[r.item_key] = []; });
+      save(KEYS.saved, { folders: [], items });
       return true;
     } catch (e) { return false; /* offline, blijf op lokale data */ }
   }
 
-  async function pushSavedItem(itemKey, folderId, added) {
+  async function pushSavedItem(itemKey, added) {
     if (!sb) return;
     const session = await getCloudSession();
     if (!session) return;
     try {
       if (added) {
-        await sb.from('saved_items').upsert(
-          { user_id: session.user.id, item_key: itemKey, folder_id: folderId },
-          { onConflict: 'user_id,item_key,folder_id' }
-        );
+        const { data: existing } = await sb.from('saved_items').select('id')
+          .eq('user_id', session.user.id).eq('item_key', itemKey).limit(1);
+        if (!existing || !existing.length) {
+          await sb.from('saved_items').insert({ user_id: session.user.id, item_key: itemKey, folder_id: null });
+        }
       } else {
         await sb.from('saved_items').delete()
-          .eq('user_id', session.user.id).eq('item_key', itemKey).eq('folder_id', folderId);
+          .eq('user_id', session.user.id).eq('item_key', itemKey);
       }
     } catch (e) { /* offline, negeren, blijft lokaal staan */ }
-  }
-
-  async function pushFolder(id, name) {
-    if (!sb) return;
-    const session = await getCloudSession();
-    if (!session) return;
-    try { await sb.from('folders').insert({ id, user_id: session.user.id, name }); } catch (e) {}
   }
 
   /* ---------- Cloud-sync: shopping list ---------- */
@@ -283,33 +269,18 @@ const Gimme = (() => {
   }
 
   function isSaved(key) {
-    const s = getSaved();
-    return Array.isArray(s.items[key]) && s.items[key].length > 0;
+    return Object.prototype.hasOwnProperty.call(getSaved().items, key);
   }
 
-  function foldersFor(key) {
-    return getSaved().items[key] || [];
-  }
-
-  function toggleSaved(key, folderId) {
+  function toggleSaved(key) {
     const s = getSaved();
-    const current = s.items[key] || [];
-    const has = current.includes(folderId);
-    s.items[key] = has ? current.filter(f => f !== folderId) : [...current, folderId];
-    if (s.items[key].length === 0) delete s.items[key];
+    const has = Object.prototype.hasOwnProperty.call(s.items, key);
+    if (has) delete s.items[key];
+    else s.items[key] = [];
     save(KEYS.saved, s);
-    pushSavedItem(key, folderId, !has);
+    pushSavedItem(key, !has);
     if (!has) trackEvent(key.startsWith('recipe:') ? 'recipe_saved' : 'article_saved', { item_id: key });
     return !has;
-  }
-
-  function createFolder(name) {
-    const s = getSaved();
-    const id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'f' + Date.now();
-    s.folders.push({ id, name });
-    save(KEYS.saved, s);
-    pushFolder(id, name);
-    return id;
   }
 
   /* ---------- Profiel (signup) ---------- */
@@ -461,7 +432,7 @@ const Gimme = (() => {
           <a href="recipe.html?id=${r.id}" aria-label="${r.title}">
             <img class="card-img" src="${r.img}" alt="${r.title}" loading="lazy">
           </a>
-          ${showSave ? `<button class="save-btn ${saved ? 'saved' : ''}" data-save-key="${key}" aria-label="Save ${r.title}" aria-pressed="${saved}"><span class="save-shape"></span></button>` : ''}
+          ${showSave ? `<button class="save-btn ${saved ? 'saved' : ''}" data-save-key="${key}" aria-label="Save ${r.title}" aria-pressed="${saved}">${HEART_SVG}</button>` : ''}
         </div>
         <div class="card-body">
           <a href="recipe.html?id=${r.id}" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;flex:1">
@@ -473,57 +444,12 @@ const Gimme = (() => {
             <p class="card-excerpt">${r.excerpt}</p>
           </a>
           ${tags}
-          <div class="save-slot" data-save-slot="${key}"></div>
         </div>
       </article>`;
   }
 
-  /* ---------- Save-knop + folder-popup ---------- */
-  function closeSavePops() {
-    document.querySelectorAll('.save-pop').forEach(p => p.remove());
-  }
-
-  function openSavePop(btn) {
-    const key = btn.dataset.saveKey;
-    const slot = document.querySelector(`[data-save-slot="${CSS.escape(key)}"]`);
-    if (!slot) return;
-    closeSavePops();
-    const s = getSaved();
-    const inFolders = s.items[key] || [];
-    const pop = document.createElement('div');
-    pop.className = 'save-pop';
-    pop.innerHTML = `
-      ${s.folders.map(f => `
-        <button class="dd-opt" data-folder="${f.id}">
-          <span class="dd-check ${inFolders.includes(f.id) ? 'on' : ''}"></span>${f.name}
-        </button>`).join('')}
-      <div class="save-new">
-        <input type="text" placeholder="New folder" aria-label="New folder name">
-        <button type="button" data-create>Add</button>
-      </div>`;
-    slot.appendChild(pop);
-
-    pop.querySelectorAll('[data-folder]').forEach(opt => {
-      opt.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const added = toggleSaved(key, opt.dataset.folder);
-        opt.querySelector('.dd-check').classList.toggle('on', added);
-        updateSaveBtn(btn, key);
-      });
-    });
-    const input = pop.querySelector('input');
-    pop.querySelector('[data-create]').addEventListener('click', (e) => {
-      e.stopPropagation();
-      const name = input.value.trim();
-      if (!name) return;
-      const id = createFolder(name);
-      toggleSaved(key, id);
-      updateSaveBtn(btn, key);
-      closeSavePops();
-      toast(`Saved to "${name}"`);
-    });
-    pop.addEventListener('click', e => e.stopPropagation());
-  }
+  /* ---------- Save-knop ---------- */
+  const HEART_SVG = '<svg class="save-shape" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 21s-6.7-4.35-9.3-8.1C.4 9.7 1.2 5.9 4.4 4.3 6.9 3 9.8 3.8 12 6.4 14.2 3.8 17.1 3 19.6 4.3c3.2 1.6 4 5.4 1.7 8.6C18.7 16.65 12 21 12 21z"/></svg>';
 
   function updateSaveBtn(btn, key) {
     const saved = isSaved(key);
@@ -537,13 +463,13 @@ const Gimme = (() => {
       btn._bound = true;
       btn.addEventListener('click', (e) => {
         e.preventDefault(); e.stopPropagation();
-        if (btn.parentElement.parentElement.querySelector('.save-pop')) { closeSavePops(); return; }
-        openSavePop(btn);
+        const key = btn.dataset.saveKey;
+        const added = toggleSaved(key);
+        updateSaveBtn(btn, key);
+        toast(added ? 'Saved' : 'Removed from saved');
       });
     });
   }
-
-  document.addEventListener('click', closeSavePops);
 
   /* ---------- Mobiele navigatie ---------- */
   function initNav() {
@@ -594,7 +520,7 @@ const Gimme = (() => {
 
   return {
     KEYS, load, save, toast,
-    getSaved, isSaved, foldersFor, toggleSaved, createFolder,
+    getSaved, isSaved, toggleSaved,
     getProfile, setProfile, isLoggedIn, logout, requireAuth,
     recipeById, recipeCard, focusLabel, focusClass, tagLabel, bindSaveButtons,
     setPageMeta, toISODuration, trackEvent,
