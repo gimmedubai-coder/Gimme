@@ -4,6 +4,69 @@
 
 const Gimme = (() => {
 
+  /* ---------- Supabase: echte accounts, cross-device sync ---------- */
+  const SUPABASE_URL = 'https://vjazfvugnhsmabrobclu.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_g4IRl7ybxeOvKcwbXYkiFQ_AJi9SHBN';
+  const sb = (typeof window !== 'undefined' && window.supabase)
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+    : null;
+
+  // Stuurt een magic link naar het opgegeven e-mailadres. Werkt voor nieuwe én
+  // bestaande accounts (bestaat het adres al, dan is dit een login).
+  async function signInWithEmail(email, meta) {
+    if (!sb) return { error: { message: 'Supabase not loaded' } };
+    const redirectTo = location.origin + location.pathname.replace(/[^/]*$/, '') + 'dashboard.html';
+    return sb.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: redirectTo, data: meta || {} },
+    });
+  }
+
+  // Haalt de actieve Supabase-sessie op (na het klikken op een magic link, of op
+  // een apparaat waar al eerder is ingelogd).
+  async function getCloudSession() {
+    if (!sb) return null;
+    const { data: { session } } = await sb.auth.getSession();
+    return session;
+  }
+
+  // Zet het Supabase-profiel van een ingelogde sessie in de lokale opslag, zodat
+  // de rest van de site (die synchroon Gimme.getProfile() gebruikt) ongewijzigd werkt.
+  async function pullFromCloud() {
+    const session = await getCloudSession();
+    if (!session) return false;
+
+    let { data: row } = await sb.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
+    if (!row) {
+      // Profielrij bestaat nog niet (trigger kan een fractie vertraagd zijn), even opnieuw proberen.
+      await new Promise(r => setTimeout(r, 800));
+      ({ data: row } = await sb.from('profiles').select('*').eq('id', session.user.id).maybeSingle());
+    }
+    if (!row) return false;
+
+    // Focus/tracking komen uit de signup-metadata; als de profielrij ze nog niet heeft, bijwerken.
+    const meta = session.user.user_metadata || {};
+    if ((!row.focuses || !row.focuses.length) && meta.focuses && meta.focuses.length) {
+      await sb.from('profiles').update({ focuses: meta.focuses, tracking: meta.tracking || [] }).eq('id', session.user.id);
+      row.focuses = meta.focuses;
+      row.tracking = meta.tracking || [];
+    }
+
+    setProfile({
+      name: row.name || meta.name || '',
+      email: row.email,
+      focuses: row.focuses || [],
+      tracking: row.tracking || [],
+      createdAt: row.created_at,
+    });
+    return true;
+  }
+
+  // Uitloggen: zowel de Supabase-sessie als het lokale profiel.
+  async function cloudSignOut() {
+    if (sb) { try { await sb.auth.signOut(); } catch (e) { /* offline, negeren */ } }
+  }
+
   /* ---------- Opslag ---------- */
   const KEYS = {
     saved: 'gimme_saved',
@@ -71,7 +134,8 @@ const Gimme = (() => {
   function setProfile(p) { save(KEYS.profile, p); }
   function isLoggedIn() { return !!getProfile(); }
 
-  function logout() {
+  async function logout() {
+    await cloudSignOut();
     localStorage.removeItem(KEYS.profile);
     location.href = 'index.html';
   }
@@ -349,5 +413,6 @@ const Gimme = (() => {
     getProfile, setProfile, isLoggedIn, logout, requireAuth,
     recipeById, recipeCard, focusLabel, focusClass, tagLabel, bindSaveButtons,
     setPageMeta, toISODuration, trackEvent,
+    signInWithEmail, getCloudSession, pullFromCloud, cloudSignOut,
   };
 })();
