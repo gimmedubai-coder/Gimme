@@ -230,7 +230,7 @@ a.card:hover, .card.hover:hover { transform: translateY(-5px); box-shadow: var(-
 .save-new button { font: 700 12px var(--font-head); color: var(--accent); cursor: pointer; background: none; border: none; white-space: nowrap; }
 
 /* ---------- Account-menu (nav) ---------- */
-.acct-menu { position: relative; display: flex; align-items: center; }
+.acct-menu { position: relative; display: flex; align-items: center; gap: 14px; }
 .acct-menu .avatar { border: none; cursor: pointer; }
 .acct-pop {
   position: absolute; top: calc(100% + 12px); right: 0; width: 210px; z-index: 60;
