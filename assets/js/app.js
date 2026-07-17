@@ -78,6 +78,176 @@ const Gimme = (() => {
     });
   }
 
+  /* ---------- Cloud-sync: saved items ----------
+     Cloud is de bron van waarheid zodra je bent ingelogd. Bij het laden van de
+     pagina halen we verse data op, bij elke wijziging schrijven we op de
+     achtergrond terug (fire-and-forget, lokaal blijft direct werken). */
+  async function pullSavedFromCloud() {
+    const session = await getCloudSession();
+    if (!session) return false;
+    try {
+      const [{ data: folderRows }, { data: itemRows }] = await Promise.all([
+        sb.from('folders').select('*').eq('user_id', session.user.id),
+        sb.from('saved_items').select('*').eq('user_id', session.user.id),
+      ]);
+      const folders = (folderRows || []).map(f => ({ id: f.id, name: f.name }));
+      const items = {};
+      (itemRows || []).forEach(r => {
+        if (!r.folder_id) return;
+        items[r.item_key] = items[r.item_key] || [];
+        items[r.item_key].push(r.folder_id);
+      });
+      save(KEYS.saved, { folders, items });
+      return true;
+    } catch (e) { return false; /* offline, blijf op lokale data */ }
+  }
+
+  async function pushSavedItem(itemKey, folderId, added) {
+    if (!sb) return;
+    const session = await getCloudSession();
+    if (!session) return;
+    try {
+      if (added) {
+        await sb.from('saved_items').upsert(
+          { user_id: session.user.id, item_key: itemKey, folder_id: folderId },
+          { onConflict: 'user_id,item_key,folder_id' }
+        );
+      } else {
+        await sb.from('saved_items').delete()
+          .eq('user_id', session.user.id).eq('item_key', itemKey).eq('folder_id', folderId);
+      }
+    } catch (e) { /* offline, negeren, blijft lokaal staan */ }
+  }
+
+  async function pushFolder(id, name) {
+    if (!sb) return;
+    const session = await getCloudSession();
+    if (!session) return;
+    try { await sb.from('folders').insert({ id, user_id: session.user.id, name }); } catch (e) {}
+  }
+
+  /* ---------- Cloud-sync: shopping list ---------- */
+  async function pullShoppingFromCloud() {
+    const session = await getCloudSession();
+    if (!session) return false;
+    try {
+      const [{ data: groupRows }, { data: checkedRows }] = await Promise.all([
+        sb.from('shopping_groups').select('*').eq('user_id', session.user.id),
+        sb.from('shopping_checked').select('*').eq('user_id', session.user.id),
+      ]);
+      const groups = (groupRows || []).map(g => ({ recipeId: g.recipe_id, servings: g.servings }));
+      const checked = {};
+      (checkedRows || []).forEach(r => { if (r.checked) checked[r.item_key] = true; });
+      save(KEYS.shopping, { groups, checked });
+      return true;
+    } catch (e) { return false; }
+  }
+
+  async function pushShoppingGroupUpsert(recipeId, servings) {
+    if (!sb) return;
+    const session = await getCloudSession();
+    if (!session) return;
+    try {
+      await sb.from('shopping_groups').upsert(
+        { user_id: session.user.id, recipe_id: recipeId, servings },
+        { onConflict: 'user_id,recipe_id' }
+      );
+    } catch (e) {}
+  }
+
+  async function pushShoppingGroupRemove(recipeId) {
+    if (!sb) return;
+    const session = await getCloudSession();
+    if (!session) return;
+    try {
+      await sb.from('shopping_groups').delete().eq('user_id', session.user.id).eq('recipe_id', recipeId);
+    } catch (e) {}
+  }
+
+  async function pushShoppingChecked(itemKey, checked) {
+    if (!sb) return;
+    const session = await getCloudSession();
+    if (!session) return;
+    try {
+      if (checked) {
+        await sb.from('shopping_checked').upsert(
+          { user_id: session.user.id, item_key: itemKey, checked: true },
+          { onConflict: 'user_id,item_key' }
+        );
+      } else {
+        await sb.from('shopping_checked').delete().eq('user_id', session.user.id).eq('item_key', itemKey);
+      }
+    } catch (e) {}
+  }
+
+  async function pushShoppingClearChecked() {
+    if (!sb) return;
+    const session = await getCloudSession();
+    if (!session) return;
+    try { await sb.from('shopping_checked').delete().eq('user_id', session.user.id); } catch (e) {}
+  }
+
+  async function pushShoppingClearAll() {
+    if (!sb) return;
+    const session = await getCloudSession();
+    if (!session) return;
+    try {
+      await Promise.all([
+        sb.from('shopping_groups').delete().eq('user_id', session.user.id),
+        sb.from('shopping_checked').delete().eq('user_id', session.user.id),
+      ]);
+    } catch (e) {}
+  }
+
+  /* ---------- Cloud-sync: cyclus-tracker ---------- */
+  async function pullCycleFromCloud() {
+    const session = await getCloudSession();
+    if (!session) return false;
+    try {
+      const [{ data: periodRows }, { data: symptomRows }] = await Promise.all([
+        sb.from('cycle_period_starts').select('*').eq('user_id', session.user.id),
+        sb.from('cycle_symptoms').select('*').eq('user_id', session.user.id),
+      ]);
+      const periodStarts = (periodRows || []).map(r => r.start_date).sort();
+      const symptoms = {};
+      (symptomRows || []).forEach(r => { if (r.symptoms && r.symptoms.length) symptoms[r.log_date] = r.symptoms; });
+      save(KEYS.cycle, { periodStarts, symptoms });
+      return true;
+    } catch (e) { return false; }
+  }
+
+  async function pushCyclePeriod(startDate, added) {
+    if (!sb) return;
+    const session = await getCloudSession();
+    if (!session) return;
+    try {
+      if (added) {
+        await sb.from('cycle_period_starts').upsert(
+          { user_id: session.user.id, start_date: startDate },
+          { onConflict: 'user_id,start_date' }
+        );
+      } else {
+        await sb.from('cycle_period_starts').delete().eq('user_id', session.user.id).eq('start_date', startDate);
+      }
+    } catch (e) {}
+  }
+
+  async function pushCycleSymptoms(logDate, symptoms) {
+    if (!sb) return;
+    const session = await getCloudSession();
+    if (!session) return;
+    try {
+      if (symptoms.length) {
+        await sb.from('cycle_symptoms').upsert(
+          { user_id: session.user.id, log_date: logDate, symptoms },
+          { onConflict: 'user_id,log_date' }
+        );
+      } else {
+        await sb.from('cycle_symptoms').delete().eq('user_id', session.user.id).eq('log_date', logDate);
+      }
+    } catch (e) {}
+  }
+
   /* ---------- Opslag ---------- */
   const KEYS = {
     saved: 'gimme_saved',
@@ -128,15 +298,17 @@ const Gimme = (() => {
     s.items[key] = has ? current.filter(f => f !== folderId) : [...current, folderId];
     if (s.items[key].length === 0) delete s.items[key];
     save(KEYS.saved, s);
+    pushSavedItem(key, folderId, !has);
     if (!has) trackEvent(key.startsWith('recipe:') ? 'recipe_saved' : 'article_saved', { item_id: key });
     return !has;
   }
 
   function createFolder(name) {
     const s = getSaved();
-    const id = 'f' + Date.now();
+    const id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'f' + Date.now();
     s.folders.push({ id, name });
     save(KEYS.saved, s);
+    pushFolder(id, name);
     return id;
   }
 
@@ -427,5 +599,8 @@ const Gimme = (() => {
     recipeById, recipeCard, focusLabel, focusClass, tagLabel, bindSaveButtons,
     setPageMeta, toISODuration, trackEvent,
     signInWithEmail, getCloudSession, pullFromCloud, cloudSignOut, signInWithGoogle,
+    pullSavedFromCloud, pullShoppingFromCloud, pullCycleFromCloud,
+    pushShoppingGroupUpsert, pushShoppingGroupRemove, pushShoppingChecked,
+    pushShoppingClearChecked, pushShoppingClearAll, pushCyclePeriod, pushCycleSymptoms,
   };
 })();
