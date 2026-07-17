@@ -229,6 +229,19 @@ a.card:hover, .card.hover:hover { transform: translateY(-5px); box-shadow: var(-
 .save-new input { flex: 1; min-width: 0; padding: 8px 10px; border-radius: 8px; border: 1.5px solid oklch(0.86 0.02 60); font: 13px var(--font-body); }
 .save-new button { font: 700 12px var(--font-head); color: var(--accent); cursor: pointer; background: none; border: none; white-space: nowrap; }
 
+/* ---------- Account-menu (nav) ---------- */
+.acct-menu { position: relative; display: flex; align-items: center; }
+.acct-menu .avatar { border: none; cursor: pointer; }
+.acct-pop {
+  position: absolute; top: calc(100% + 12px); right: 0; width: 210px; z-index: 60;
+  background: oklch(0.97 0.01 65); border-radius: 14px;
+  border: 1px solid var(--line-dark); padding: 12px; display: flex; flex-direction: column; gap: 4px;
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.18);
+}
+.acct-pop[hidden] { display: none; }
+.acct-pop .dd-opt { text-decoration: none; }
+.acct-pop hr { border: none; border-top: 1px solid oklch(0.92 0.015 60); margin: 6px 4px; width: 100%; }
+
 /* ---------- Folder-kaarten (Saved) ---------- */
 .folder-card {
   border-radius: 16px; padding: 20px; background: #fff; border: 1.5px solid var(--line);
